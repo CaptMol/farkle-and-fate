@@ -9,6 +9,7 @@ import { mkStarterDeck, mkDie, applyRune } from './dice.js';
 import { buildOffer, buy } from './shop.js';
 import { castSpell, useShieldCharge, hasShield, consumeFumble, consumeExtraDie } from './spells.js';
 import { greedyTurn } from './ai.js';
+import { getScorableUids } from './scoring.js';
 import { renderZone } from './render/renderZone.js';
 import { renderVault } from './render/renderVault.js';
 import { renderHUD } from './render/renderHUD.js';
