@@ -1,6 +1,5 @@
 /**
  * src/game.js
- * Auto-extracted from bundle. Edit this file.
  */
 
 import { PlayerState } from './PlayerState.js';
@@ -35,8 +34,8 @@ class Game {
     this.enemy   = null;
     this.fsm     = null;
 
-    this.playerTurn = null;  // TurnState for current player turn
-    this.enemyTurn  = null;  // TurnState for current enemy turn
+    this.playerTurn = null;
+    this.enemyTurn  = null;
 
     this._enemyThinkTimer = null;
   }
@@ -71,7 +70,6 @@ class Game {
     this._renderAll();
     this._updateButtons(phase);
 
-    // Route to appropriate handler
     switch (phase) {
       case PHASES.ROLL:
         if (!active.isHuman) this._scheduleAI(() => this._aiRoll());
@@ -131,6 +129,15 @@ class Game {
     const active = this.fsm.activePlayer;
     const turn   = this._getTurn(active);
 
+    // FIX: Farkle-Regel — Spieler muss mindestens einen Würfel picken bevor er neu rollt.
+    // Ausnahme: erster Roll des Zuges (ROLL-Phase) und Enemy-Zug.
+    if (this.fsm.isPlayerTurn && this.fsm.phase === PHASES.PICK) {
+      if (!turn.hasPickedAnything) {
+        log('bad', 'Pick at least one die before rolling again!');
+        return;
+      }
+    }
+
     SFX.roll();
 
     // Archive current picks if any (completing a sub-roll before re-rolling)
@@ -138,8 +145,7 @@ class Game {
       ? turn.withArchive(active.enchants.perPick)
       : turn;
 
-    // ── TurnState decides which dice to roll ──
-    // TurnState.diceToRoll returns active DieStates if re-roll, null if fresh roll
+    // TurnState decides which dice to roll
     const remainingDice = newTurn.diceToRoll;
     let deckToRoll = remainingDice
       ? remainingDice.map(ds => ds.dieRef).filter(Boolean)
@@ -169,14 +175,13 @@ class Game {
   }
 
   _aiRoll() {
-    this.roll(); // same logic
+    this.roll();
   }
 
   // ── Farkle ────────────────────────────────────────────────────────────────
 
   _handleFarkleCheck(active, passive) {
     if (hasShield(active)) {
-      // Shield is an instant — open the farkle window
       this.fsm._advance(PHASES.INSTANT_FARKLE);
     } else {
       SFX.farkle();
@@ -203,7 +208,6 @@ class Game {
       }
     });
 
-    // AI auto-uses shield
     if (!active.isHuman) {
       this._scheduleAI(() => {
         const decision = greedyTurn('INSTANT_FARKLE', this._getTurn(active), active, passive);
@@ -229,7 +233,6 @@ class Game {
   _handleInstantWindow(windowType, active, passive) {
     const passiveInstants = passive.getPlayableInstants(windowType);
 
-    // Auto-skip if passive has nothing to play
     if (!passiveInstants.length) {
       if (windowType === PHASES.INSTANT_W1) this.fsm.afterInstantW1();
       else this.fsm.afterInstantW2();
@@ -242,11 +245,9 @@ class Game {
       }
       if (windowType === PHASES.INSTANT_W1) this.fsm.afterInstantW1();
       else this.fsm.afterInstantW2();
-      // Hide instant window UI when resolved
       if (passive.isHuman) window.hideInstantWindowUI?.();
     });
 
-    // AI passive: decide and resolve automatically
     if (!passive.isHuman) {
       this._scheduleAI(() => {
         const turn = this._getTurn(active);
@@ -258,13 +259,12 @@ class Game {
         }
       });
     } else {
-      // Human passive: show instant window UI with countdown
       window.showInstantWindowUI?.(windowType, passiveInstants, this.fsm.instantTimeout);
     }
   }
 
   _executeInstant(spell, caster, target, windowType, targetUid) {
-    const turn = this._getTurn(target); // target's turn state is affected
+    const turn = this._getTurn(target);
     const result = castSpell(spell, caster, target, turn, targetUid);
 
     if (result.success) {
@@ -306,20 +306,17 @@ class Game {
     const active = this.fsm.activePlayer;
     const turn   = this._getTurn(active);
 
-    // Archive pre-existing singles first
     let newTurn = turn;
     const nonComboInPicked = turn.picked.filter(d => !combo.diceUids.includes(d.uid));
     if (nonComboInPicked.length > 0) {
       newTurn = newTurn.withArchive(active.enchants.perPick);
     }
 
-    // Move combo dice from active to picked
     combo.diceUids.forEach(uid => {
       const inActive = newTurn.active.find(d => d.uid === uid);
       if (inActive) newTurn = newTurn.withPickDie(uid);
     });
 
-    // Archive as clean combo group
     newTurn = newTurn.withArchive(active.enchants.perPick);
 
     this._setTurn(active, newTurn);
@@ -335,7 +332,6 @@ class Game {
     const decision = greedyTurn(PHASES.PICK, turn, active, this.fsm.passivePlayer);
 
     if (decision.action === 'pick') {
-      // Pick all combo dice at once
       let newTurn = turn;
       decision.uids.forEach(uid => {
         if (newTurn.active.find(d => d.uid === uid)) {
@@ -346,7 +342,6 @@ class Game {
       this._setTurn(active, newTurn);
       this._renderAll();
 
-      // Decide roll or bank
       const newDecision = greedyTurn(PHASES.PICK, newTurn, active, this.fsm.passivePlayer);
       setTimeout(() => {
         if (newDecision.then === 'bank' || newDecision.action === 'bank') {
@@ -381,13 +376,11 @@ class Game {
     const active  = this.fsm.activePlayer;
     const turn    = this._getTurn(active);
 
-    // Archive any remaining picks
     let finalTurn = turn.picked.length > 0
       ? turn.withArchive(active.enchants.perPick)
       : turn;
 
     this._setTurn(active, finalTurn);
-    // Go directly to END_TURN - skip W2 for now (instants on bank = future feature)
     this.fsm._advance(PHASES.END_TURN);
   }
 
@@ -400,7 +393,6 @@ class Game {
     log('hi', `✓ ${score.toLocaleString()} pts banked! (+${earned} 🪙)`);
     SFX.bank?.(score);
 
-    // Animations
     showFloat(`+${score.toLocaleString()}`, score >= 1000 ? 'var(--epic)' : 'var(--green2)');
     setTimeout(() => {
       SFX.coin?.();
@@ -413,18 +405,14 @@ class Game {
     this.fsm.onEndTurn(won);
   }
 
-
-
   _handleVictoryWindow(active, passive) {
-    // Give passive player 5s to play last-stand instant
     const instants = passive.getPlayableInstants('INSTANT_VICTORY');
     this.fsm.openInstantWindow('INSTANT_VICTORY', instants).then(result => {
       if (result?.spell) {
         this._executeInstant(result.spell, passive, active, 'INSTANT_VICTORY', result.targetUid);
-        // Re-check win condition
         if (active.total < active.target) {
           log('mag', `⚡ Last stand! ${passive.name} fights back!`);
-          this.fsm._advance(PHASES.PICK); // game continues
+          this.fsm._advance(PHASES.PICK);
           return;
         }
       }
@@ -445,7 +433,6 @@ class Game {
   // ── Shop ──────────────────────────────────────────────────────────────────
 
   _handleShop(active, passive) {
-    // Player shop
     if (this.player.shop.hasPending) {
       this.player.shop.openNext();
       const offers = buildOffer(this.player);
@@ -469,7 +456,6 @@ class Game {
       const offers = buildOffer(enemy);
       enemy._currentShopOffers = offers;
       (window.showShopUI||((o,p,e,cb)=>setTimeout(cb,500)))(offers, enemy, true, () => {
-        // AI buys
         const decision = greedyTurn(PHASES.SHOP, null, enemy, this.player);
         if (decision.action === 'buy') {
           const result = buy(decision.item, enemy, mkDie);
@@ -503,19 +489,17 @@ class Game {
   // ── Between Turns ─────────────────────────────────────────────────────────
 
   _handleBetweenTurns(justPlayed, nextUp) {
-    // Swap turns
     setTimeout(() => {
       this.fsm.startTurn(nextUp, justPlayed);
     }, 400);
   }
 
-  // ── Spell Casting (from UI) ───────────────────────────────────────────────
+  // ── Spell Casting ─────────────────────────────────────────────────────────
 
   castSpell(instanceId) {
     const spell = this.player.spells.find(s => s.instanceId === instanceId);
     if (!spell) return;
 
-    // Sorcery spells — cast immediately on own turn
     if (spell.timing === 'sorcery') {
       const result = castSpell(spell, this.player, this.enemy, this.playerTurn);
       if (result.success) {
@@ -530,7 +514,6 @@ class Game {
         SFX.error?.();
       }
     }
-    // Instant spells are handled via instant windows — not directly clickable
   }
 
   // ── Rune Application ──────────────────────────────────────────────────────
@@ -563,7 +546,6 @@ class Game {
 
     const newTarget = Math.round(10000 * challenge.targetMult);
 
-    // Winner gets the handicap (they are OP)
     if (winnerIsPlayer) {
       this.player.target = newTarget;
       this.enemy.target  = 10000;
@@ -572,33 +554,27 @@ class Game {
       this.enemy.target  = newTarget;
     }
 
-    // Bonus gold for winner
     if (winnerIsPlayer) {
       this.player.coins += challenge.goldBonus;
-      this.enemy.coins  += 50; // consolation
+      this.enemy.coins  += 50;
     } else {
       this.enemy.coins  += challenge.goldBonus;
       this.player.coins += 50;
     }
 
-    // Winner gets enchantments reset (decay)
     if (winnerIsPlayer) this.player.resetEnchants();
     else                this.enemy.resetEnchants();
 
-    // Reset totals and shops for new round
     this.player.total = 0;
     this.enemy.total  = 0;
     this.player.shop  = new (Object.getPrototypeOf(this.player.shop).constructor)(this.player);
     this.enemy.shop   = new (Object.getPrototypeOf(this.enemy.shop).constructor)(this.enemy);
 
-    // Update streak
     if (winnerIsPlayer) this.player.winStreak++;
     else { this.player.winStreak = 0; }
 
-    // New enemy name
     this.enemy.name = pickEnemyName();
 
-    // Reset turns
     this.playerTurn = TurnState.fresh();
     this.enemyTurn  = TurnState.fresh();
 
@@ -624,7 +600,6 @@ class Game {
   }
 
   _animateRoll(dice, turn, callback) {
-    // Each die gets a fixed slotIndex (0-5, or 0-6 with extra die)
     const rolling = dice.map((die, i) => ({ ...die.roll(i), rolling: true }));
     const rolled  = turn.withRoll(rolling);
     this._setTurn(this.fsm.activePlayer, rolled);
@@ -639,7 +614,6 @@ class Game {
   _renderAll() {
     const phase = this.fsm?.phase;
 
-    // Player zone
     renderZone(this.player, this.playerTurn, {
       drow: 'p-drow', seczone: 'p-seczone', rscore: 'p-rscore', banner: 'p-combo-banner'
     }, {
@@ -649,7 +623,6 @@ class Game {
       playerState: this.player,
     });
 
-    // Enemy zone
     renderZone(this.enemy, this.enemyTurn, {
       drow: 'e-drow', seczone: 'e-seczone', rscore: 'e-rscore', banner: 'e-combo-banner'
     }, {
@@ -659,24 +632,20 @@ class Game {
       playerState: this.enemy,
     });
 
-    // Player vault
     renderVault(this.player, {
       dcoll: 'dcoll', enchList: 'ench-list-bar', runeBar: 'rune-list-bar',
       spellList: 'spell-list-bar', deckCt: 'deck-ct', gold: 'p-gold-vault',
       nameEl: 'p-name-lbl', titleEl: 'p-title-lbl',
     }, { isHuman: true });
 
-    // Enemy vault
     renderVault(this.enemy, {
       dcoll: 'e-dcoll', enchList: 'e-ench-list', runeBar: 'e-rune-bar',
       spellList: 'e-spell-list', deckCt: 'e-deck-ct', gold: 'e-gold-vault',
       nameEl: 'e-name-lbl', titleEl: 'e-title-lbl',
     }, { isHuman: false });
 
-    // HUD
     renderHUD(this.player, this.enemy, phase);
 
-    // Apply active/inactive zone classes
     const pz = document.getElementById('pz');
     const ez = document.getElementById('ez');
     if (pz && ez) {
@@ -689,8 +658,8 @@ class Game {
   }
 
   _updateButtons(phase) {
-    const rollBtn = document.getElementById('btn-roll');
-    const endBtn  = document.getElementById('btn-end');
+    const rollBtn  = document.getElementById('btn-roll');
+    const endBtn   = document.getElementById('btn-end');
     const spellBtn = document.getElementById('btn-spell');
 
     if (!rollBtn) return;
@@ -703,7 +672,6 @@ class Game {
     rollBtn.disabled = !canRoll;
     if (endBtn) endBtn.disabled = !canEnd;
 
-    // Breathing animation
     rollBtn.classList.toggle('breathing',        canRoll && !hasShieldActive);
     rollBtn.classList.toggle('breathing-shield',  canRoll && hasShieldActive);
     rollBtn.textContent = hasShieldActive
@@ -757,7 +725,6 @@ export function initGame() {
   window._game = game;
   game.init();
 
-  // Save player name
   document.getElementById('p-name-lbl')?.addEventListener('click', () => {
     const name = prompt('Your name:', game.player.name);
     if (name?.trim()) {
