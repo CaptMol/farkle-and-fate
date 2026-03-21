@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FARKLE &amp; FATE</title>
+<link rel="stylesheet" href="style/vars.css">
+<link rel="stylesheet" href="style/layout.css">
+<link rel="stylesheet" href="style/components.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+</head>
+<body class="skin-tavern">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+</head>
+<body class="skin-tavern">
+
+<!-- ── HEADER ──────────────────────────────────────────────────── -->
+<header class="hdr">
+  <div class="game-title">Farkle &amp; Fate</div>
+  <div class="game-sub">
+    <span style="color:var(--gold-dim);font-size:13px;opacity:.6">⚔</span>
+    <span>The Dice Shall Decide</span>
+    <span style="color:var(--gold-dim);font-size:13px;opacity:.6">⚔</span>
+  </div>
+  <div class="hdr-line"></div>
+  <div class="hdr-controls">
+    <select id="skin-select" onchange="document.body.className=this.value;localStorage.setItem('ff-skin',this.value)"
+      style="background:var(--bg3);border:1px solid var(--border2);border-radius:4px;
+      color:var(--text-muted);font-family:Cinzel,serif;font-size:9px;letter-spacing:1px;
+      padding:3px 6px;cursor:pointer;outline:none;appearance:none;">
+      <option value="skin-tavern">⬛ Tavern</option>
+      <option value="skin-arcane">🔵 Arcane</option>
+      <option value="skin-dungeon">🟢 Dungeon</option>
+    </select>
+  </div>
+</header>
+
+<!-- ── STATUS BAR ───────────────────────────────────────────────── -->
+<div class="sbar">
+  <span style="font-family:Cinzel,serif;font-size:10px;letter-spacing:1px;color:var(--text-muted)" id="run-round">Round 1</span>
+  <div style="flex:1;max-width:520px;padding:0 20px">
+    <div class="prog-label-row">
+      <span style="color:var(--green2)">▶ PLAYER</span>
+      <span style="color:var(--red2)">ENEMY ◀</span>
+    </div>
+    <div class="prog-wrap">
+      <div class="prog-bar-outer">
+        <div class="prog-fill-player" id="prog-player" style="width:0%"></div>
+      </div>
+      <div class="prog-divider"></div>
+      <div class="prog-bar-outer">
+        <div class="prog-fill-enemy" id="prog-enemy" style="width:0%"></div>
+      </div>
+    </div>
+    <div class="prog-score-row">
+      <span class="prog-score-p">
+        <span id="s-player-score">0</span>
+        <span style="font-size:9px;color:var(--text-muted)" id="s-player-target">/ 10,000</span>
+      </span>
+      <span class="prog-score-e">
+        <span style="font-size:9px;color:var(--text-muted)" id="s-enemy-target">10,000 /</span>
+        <span id="s-enemy-score">0</span>
+      </span>
+    </div>
+  </div>
+  <span style="font-family:Cinzel,serif;font-size:10px;letter-spacing:1px;color:var(--text-muted)" id="sbar-right"></span>
+</div>
+
+<!-- ── MAIN LAYOUT ───────────────────────────────────────────────── -->
+<div class="layout">
+
+  <!-- ── PLAYER VAULT (left) ── -->
+  <aside class="vault-panel" id="player-vault-panel">
+    <div class="vault-ph">
+      <div>
+        <div class="vault-name" id="p-name-lbl" title="Click to rename" style="cursor:pointer;color:var(--gold)">Player</div>
+        <div style="font-family:Cinzel,serif;font-size:9px;color:var(--text-muted);margin-top:1px" id="p-title-lbl">The Wanderer</div>
+      </div>
+      <div class="vault-gold" id="p-gold-vault">50 🪙</div>
+    </div>
+    <div class="vault-body">
+      <div style="font-family:Cinzel,serif;font-size:10px;color:var(--text-muted);margin-bottom:4px">
+        <span id="deck-ct">0/6</span> in deck · click to toggle
+      </div>
+      <div id="dcoll"></div>
+
+      <div class="vault-list-head">🔮 RUNES</div>
+      <div id="rune-list-bar"></div>
+
+      <div class="vault-list-head">✦ ENCHANTMENTS</div>
+      <div id="ench-list-bar"></div>
+
+      <div class="vault-list-head">⚔ SPELLS</div>
+      <div id="spell-list-bar"></div>
+    </div>
+  </aside>
+
+  <!-- ── CENTRAL FIELD ── -->
+  <main class="central">
+
+    <!-- Enemy zone -->
+    <div style="padding:0 0 4px">
+
+      <div class="zone ez inactive" id="ez">
+        <div class="zone-lbl el" id="e-namelbl">Enemy</div>
+        <div class="zscore-row">
+          <span style="font-family:Cinzel,serif;font-size:9px;letter-spacing:2px;color:var(--text-muted)">TURN SCORE</span>
+          <span class="zscore" style="color:var(--red2)" id="e-rscore">0</span>
+        </div>
+        <div id="e-combo-banner"></div>
+        <div class="think" id="think">
+          <span id="think-name">Enemy ponders</span>
+          <div><span>•</span><span>•</span><span>•</span></div>
+        </div>
+        <div class="drow" id="e-drow"><div class="es" style="color:var(--text-muted);font-size:12px;font-style:italic;text-align:center;padding:20px 0">Waiting for your turn…</div></div>
+        <div class="seczone" id="e-seczone" style="border-color:rgba(180,60,40,.25);background:rgba(180,60,40,.02)">
+          <div class="seczone-lbl" style="color:var(--red2);background:var(--field)">Secured</div>
+          <div class="es sec-empty" style="color:var(--text-muted);font-size:11px;font-style:italic">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Goal line -->
+    <div style="text-align:center;font-family:Cinzel,serif;font-size:10px;
+      letter-spacing:4px;color:var(--text-muted);padding:3px 0;
+      border-top:1px solid var(--border);border-bottom:1px solid var(--border)" id="tgt-line">
+      GOAL: 10,000 POINTS
+    </div>
+
+    <!-- Turn indicator -->
+    <div class="turn-h" id="turn-h"><span class="adot"></span>Your Turn</div>
+
+    <!-- Player zone -->
+    <div style="padding:4px 0 0">
+      <div class="zone active" id="pz">
+        <div class="zone-lbl pl">Player</div>
+        <div class="zscore-row">
+          <span style="font-family:Cinzel,serif;font-size:9px;letter-spacing:2px;color:var(--text-muted)">TURN SCORE</span>
+          <span class="zscore" style="color:var(--green2)" id="p-rscore">0</span>
+        </div>
+        <div id="p-combo-banner"></div>
+        <div class="drow" id="p-drow"></div>
+        <div class="seczone" id="p-seczone">
+          <div class="seczone-lbl">Secured</div>
+          <div class="es sec-empty" id="p-sec-empty" style="color:var(--text-muted);font-size:12px;font-style:italic">Click scoring dice · roll again · or End Turn</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div style="display:flex;gap:12px;justify-content:center;align-items:center;padding:12px 16px">
+      <button class="btn btn-p"    id="btn-roll"  onclick="window._game?.roll()"    disabled>⚀ Roll</button>
+      <button class="btn btn-spell" id="btn-spell" onclick="showSpellPanel()"       disabled>✕ Spell</button>
+      <button class="btn btn-end"   id="btn-end"  onclick="window._game?.endTurn()" disabled>▶ End Turn</button>
+    </div>
+    <div style="text-align:center;font-family:Cinzel,serif;font-size:9px;
+      letter-spacing:2px;color:var(--text-muted);padding-bottom:6px" id="hint-text">
+      Click scoring dice · roll again · or End Turn
+    </div>
+
+    <!-- Combinations display -->
+    <div style="border-top:1px solid var(--border);padding:8px 16px">
+      <div style="font-family:Cinzel,serif;font-size:9px;letter-spacing:3px;
+        color:var(--text-muted);margin-bottom:6px">● COMBINATIONS</div>
+      <div id="combo-display" style="font-size:11px;color:var(--text-muted);font-style:italic">None yet</div>
+    </div>
+  </main>
+
+  <!-- ── ENEMY VAULT (right) ── -->
+  <aside class="vault-panel right" id="enemy-vault-panel">
+    <div class="vault-ph">
+      <div>
+        <div class="vault-name" id="e-name-lbl" style="color:var(--red2)">Enemy</div>
+        <div style="font-family:Cinzel,serif;font-size:9px;color:var(--text-muted);margin-top:1px" id="e-title-lbl"></div>
+      </div>
+      <div class="vault-gold" id="e-gold-vault" style="color:var(--red2)">50 🪙</div>
+    </div>
+    <div class="vault-body">
+      <div style="font-family:Cinzel,serif;font-size:10px;color:var(--text-muted);margin-bottom:4px">
+        <span id="e-deck-ct">0/6</span> in deck
+      </div>
+      <div id="e-dcoll"></div>
+
+      <div class="vault-list-head" style="color:var(--red2);opacity:.7">🔮 RUNES</div>
+      <div id="e-rune-bar"></div>
+
+      <div class="vault-list-head" style="color:var(--red2);opacity:.7">✦ ENCHANTMENTS</div>
+      <div id="e-ench-list"></div>
+
+      <div class="vault-list-head" style="color:var(--red2);opacity:.7">⚔ SPELLS</div>
+      <div id="e-spell-list"></div>
+    </div>
+  </aside>
+
+  <!-- ── CHRONICLE (bottom) ── -->
+  <div class="chronicle-bar">
+    <div style="font-family:Cinzel,serif;font-size:8px;letter-spacing:3px;
+      color:var(--text-muted);margin-bottom:4px">● BATTLE CHRONICLE</div>
+    <div id="glog"></div>
+  </div>
+</div>
+
+<!-- ── SHOP OVERLAY ──────────────────────────────────────────────── -->
+<div class="ov" id="shop-ov">
+  <div class="ov-box" style="max-width:720px">
+    <div style="text-align:center;font-family:Cinzel,serif;font-size:13px;
+      letter-spacing:3px;color:var(--gold2);margin-bottom:4px" id="shop-t">✦ Shop ✦</div>
+    <div style="font-family:Cinzel,serif;font-size:12px;color:var(--text-dim);
+      text-align:center;margin-bottom:6px;letter-spacing:1px" id="shop-player-name"></div>
+
+    <div id="shop-info-bar" style="font-family:Cinzel,serif;font-size:10px;
+      letter-spacing:1px;color:var(--text-muted);text-align:center;
+      margin-bottom:8px;line-height:1.7;border-bottom:1px solid var(--border2);padding-bottom:8px"></div>
+
+    <div style="text-align:center;font-family:Cinzel,serif;font-size:10px;
+      letter-spacing:3px;color:var(--text-muted);margin-bottom:12px">— CHOOSE ONE —</div>
+
+    <div id="shop-items" style="margin-bottom:16px"></div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;
+      border-top:1px solid var(--border2);padding-top:12px">
+      <span style="font-family:Cinzel,serif;font-size:12px;color:var(--gold2)">
+        Gold: <span id="shop-coins">0 🪙</span>
+      </span>
+      <button class="btn" id="shop-skip-btn" onclick="window._game?.skipShop()"
+        style="font-size:10px;padding:6px 16px">Skip →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── VICTORY OVERLAY ───────────────────────────────────────────── -->
+<div class="ov" id="go-ov">
+  <div class="ov-box" style="text-align:center;max-width:500px">
+    <div style="font-family:Cinzel Decorative,serif;font-size:22px;
+      color:var(--gold2);letter-spacing:4px;margin-bottom:12px" id="go-t">Victory!</div>
+    <div style="font-family:Cinzel,serif;font-size:12px;color:var(--text-dim);
+      margin-bottom:24px;line-height:1.8" id="go-b"></div>
+
+    <div style="font-family:Cinzel,serif;font-size:10px;letter-spacing:2px;
+      color:var(--text-muted);margin-bottom:16px">CHOOSE YOUR NEXT CHALLENGE</div>
+    <div id="go-challenges" style="display:flex;flex-direction:column;gap:8px"></div>
+  </div>
+</div>
+
+<!-- ── RUNE MODAL ────────────────────────────────────────────────── -->
+<div class="ov" id="rune-ov">
+  <div class="ov-box" style="max-width:400px">
+    <div style="font-family:Cinzel,serif;font-size:12px;letter-spacing:2px;
+      color:var(--epic);margin-bottom:12px">🔮 Apply Rune</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px" id="rune-desc">
+      Add a bonus number (1-6) to a face. Increases probability of that value on this die.
+    </div>
+    <div style="font-family:Cinzel,serif;font-size:10px;color:var(--text-muted);margin-bottom:8px">CHOOSE A FACE:</div>
+    <div id="rune-faces" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px"></div>
+    <div id="rune-value-picker" style="display:none">
+      <div style="font-family:Cinzel,serif;font-size:10px;color:var(--text-muted);margin-bottom:8px">CHOOSE VALUE (1-6):</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap" id="rune-values"></div>
+    </div>
+    <button class="btn" onclick="document.getElementById('rune-ov').classList.remove('active')"
+      style="margin-top:16px;font-size:10px;padding:6px 16px">Cancel</button>
+  </div>
+</div>
+
+<!-- ── INSTANT WINDOW ────────────────────────────────────────────── -->
+<div class="instant-window" id="instant-window">
+  <div style="font-family:Cinzel,serif;font-size:10px;letter-spacing:2px;color:var(--epic);margin-bottom:8px">
+    ⚡ INSTANT WINDOW
+  </div>
+  <div id="instant-spells" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px"></div>
+  <button onclick="window._game?.fsm?.passInstant()"
+    style="font-family:Cinzel,serif;font-size:9px;padding:4px 12px;border:1px solid var(--border2);
+    border-radius:3px;background:transparent;color:var(--text-muted);cursor:pointer">Pass →</button>
+  <div class="instant-countdown" id="instant-countdown" style="width:100%"></div>
+</div>
+
+<!-- ── SCRIPTS ───────────────────────────────────────────────────── -->
+
+<script type="module">
+import { initGame } from './src/game.js';
+import { NEXT_ROUND_CHALLENGES } from './src/constants.js';
+import { buildOffer, buy } from './src/shop.js';
+import { mkDie } from './src/dice.js';
+
+// Init game
+initGame();
+
+// Restore skin
+const saved = localStorage.getItem('ff-skin');
+if (saved) {
+  document.body.className = saved;
+  document.getElementById('skin-select').value = saved;
+}
+
+// ── Shop UI ──────────────────────────────────────────────────────
+window._shopCallback = null;
+
+window.showShopUI = function(offers, player, isEnemy, onClose) {
+  window._shopCallback = onClose;
+  const cont = document.getElementById('shop-items');
+  cont.innerHTML = '';
+
+  // offers = { columns: [{label, items}, {label, items}] }
+  cont.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px';
+
+  (offers.columns || []).forEach((col, colIdx) => {
+    const colEl = document.createElement('div');
+    colEl.style.cssText = 'display:flex;flex-direction:column;gap:10px';
+
+    // Column headline
+    const colHead = document.createElement('div');
+    colHead.style.cssText = `font-family:Cinzel,serif;font-size:10px;letter-spacing:2px;
+      text-transform:uppercase;color:var(--text-muted);text-align:center;
+      border-bottom:1px solid var(--border2);padding-bottom:6px`;
+    colHead.textContent = col.label;
+    colEl.appendChild(colHead);
+
+    // 2 item slots per column
+    const itemsGrid = document.createElement('div');
+    itemsGrid.style.cssText = 'display:flex;flex-direction:column;gap:8px';
+
+    (col.items || [null, null]).forEach((o, idx) => {
+      const globalIdx = colIdx * 2 + idx;
+      if (o) {
+        itemsGrid.appendChild(buildShopCard(o, player.coins, isEnemy, globalIdx));
+      } else {
+        const ph = document.createElement('div');
+        ph.style.cssText = `border:2px dashed var(--border);border-radius:8px;padding:12px;
+          display:flex;flex-direction:column;align-items:center;justify-content:center;
+          opacity:.25;min-height:120px;gap:4px`;
+        ph.innerHTML = `<div style="font-size:20px">○</div>
+          <div style="font-size:9px;color:var(--text-muted)">None available</div>`;
+        itemsGrid.appendChild(ph);
+      }
+    });
+
+    colEl.appendChild(itemsGrid);
+    cont.appendChild(colEl);
+  });
+
+  // Shop name (flavor) — alternates for variety
+  const SHOP_NAMES = ["✦ Arcane Shop ✦", "✦ The Wandering Market ✦", "✦ Fates Emporium ✦", "✦ The Rune Exchange ✦"];
+  const titleEl = document.getElementById('shop-t');
+  titleEl.textContent = SHOP_NAMES[Math.floor(Math.random() * SHOP_NAMES.length)];
+  titleEl.style.color = isEnemy ? 'var(--red2)' : 'var(--gold2)';
+  titleEl.style.fontSize = '14px';
+
+  // Player name
+  const nameEl = document.getElementById('shop-player-name');
+  if (nameEl) {
+    nameEl.textContent = player.name;
+    nameEl.style.color = isEnemy ? 'var(--red2)' : 'var(--text-dim)';
+  }
+
+  // Trigger info: pts this turn · shop X/Y · gold
+  const info = document.getElementById('shop-info-bar');
+  if (info) {
+    const lastBanked = window._game?.player?._lastBanked || 0;
+    const pts = isEnemy ? player.total.toLocaleString() : `+${lastBanked.toLocaleString()} pts this turn`;
+    info.innerHTML = `
+      <span style="color:var(--gold)">${pts}</span>
+      <span style="color:var(--border2)">·</span>
+      <span style="color:var(--text-muted)">${player.shop.counterLabel}</span>
+      <span style="color:var(--border2)">·</span>
+      <span style="color:var(--gold2)">${player.coins} 🪙</span>`;
+  }
+
+  document.getElementById('shop-coins').textContent = `${player.coins} 🪙`;
+
+  const skipBtn = document.getElementById('shop-skip-btn');
+  if (skipBtn) skipBtn.style.display = isEnemy ? 'none' : '';
+
+  document.getElementById('shop-ov').classList.add('active');
+
+  // Enemy shop: auto-close after AI "decision" time
+  if (isEnemy) {
+    setTimeout(() => {
+      document.getElementById('shop-ov').classList.remove('active');
+      if (window._shopCallback) { const cb = window._shopCallback; window._shopCallback = null; cb(); }
+    }, 2200);
+  }
+};
+
+window.closeShopUI = function() {
+  document.getElementById('shop-ov').classList.remove('active');
+};
+
+function buildShopCard(o, coins, isEnemy, idx) {
+  const can = coins >= o.cost;
+  const rc  = { common:'var(--common)',rare:'var(--rare)',epic:'var(--epic)',legendary:'var(--legendary)',godlike:'var(--godlike)' };
+
+  const card = document.createElement('div');
+  card.className = `sc ${o.rarity}${o.type==='rune'?' sc-rune':''}${!can&&!isEnemy?' nc':''}`;
+  if (isEnemy) { card.id = `e-shop-item-${idx}`; card.style.cssText='opacity:.55;cursor:default;transition:all .4s;'; }
+
+  card.innerHTML = `
+    <div style="text-align:center;margin-bottom:8px">
+      <span style="font-family:Cinzel,serif;font-size:14px;font-weight:bold;color:${rc[o.rarity]};letter-spacing:1px;text-transform:uppercase">${o.rarity}</span>
+      ${o.type!=='rune'?`<span style="color:var(--text-muted);font-size:10px;margin-left:4px">· ${o.name}</span>`:''}
+    </div>
+    <div style="font-size:22px;text-align:center;margin:6px 0">${o.icon||'?'}</div>
+    <div style="font-family:Cinzel,serif;font-size:11px;font-weight:bold;
+      color:${rc[o.rarity]};text-align:center;margin-bottom:4px">${o.name}</div>
+    <div style="font-size:11px;color:var(--text-muted);text-align:center;margin-bottom:10px;min-height:32px">${o.desc||''}</div>
+    <div style="text-align:center;font-family:Cinzel,serif;font-size:14px;font-weight:bold;
+      color:${can?'var(--gold2)':'var(--text-muted)'}">${o.cost} 🪙</div>
+  `;
+
+  if (!isEnemy) {
+    card.onclick = () => {
+      if (!can) { window._game?.audio?.SFX?.error?.(); return; }
+      window._game?.buyItem(o);
+      window._shopCallback?.();
+    };
+  }
+
+  return card;
+}
+
+window._game.skipShop = function() {
+  window._shopCallback?.();
+};
+
+// ── Victory Screen ───────────────────────────────────────────────
+window.showVictoryScreen = function(winner, player, enemy, challenges) {
+  const won = winner.id === 'player';
+  document.getElementById('go-t').textContent = won ? '🏆 Victory!' : '☠ Defeated';
+  document.getElementById('go-t').style.color = won ? 'var(--gold2)' : 'var(--red2)';
+
+  const enchCount = Object.keys(player.enchants.perPick).length + Object.keys(player.enchants.endOfTurn).length;
+  document.getElementById('go-b').innerHTML =
+    `<b>${winner.name}</b> wins!<br>${winner.total.toLocaleString()} pts · 🪙 ${winner.coins} Gold · Streak ${player.winStreak}`+
+    (won && enchCount>0 ? `<br><span style="color:var(--text-muted);font-size:11px;font-family:Cinzel,serif;letter-spacing:1px">✦ Enchantments fade with victory — choose your next challenge wisely</span>` : '');
+
+  const ch = document.getElementById('go-challenges');
+  ch.innerHTML = '';
+  challenges.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'btn';
+    btn.style.cssText = 'width:100%;justify-content:space-between;display:flex;align-items:center;padding:12px 16px';
+    btn.innerHTML = `<span>${c.icon} ${c.label}</span><span style="font-size:11px;color:var(--text-muted)">${c.desc}</span>`;
+    btn.onclick = () => window._game?.nextRound(c.id, won);
+    ch.appendChild(btn);
+  });
+
+  document.getElementById('go-ov').classList.add('active');
+};
+
+window.hideVictoryScreen = function() {
+  document.getElementById('go-ov').classList.remove('active');
+};
+
+// ── Rune Modal ───────────────────────────────────────────────────
+window.showRuneModal = function(die, player, callback) {
+  const ov = document.getElementById('rune-ov');
+  document.getElementById('rune-desc').textContent =
+    `Apply rune to ${die.name} — choose a face. Free slots: ${die.freeRuneSlots}/${die.runeSlots}`;
+
+  let selectedFace = null;
+
+  const facesEl = document.getElementById('rune-faces');
+  facesEl.innerHTML = '';
+  die.faces.forEach(face => {
+    const btn = document.createElement('div');
+    const hasRune = face.runeValue !== null;
+    btn.style.cssText = `width:36px;height:36px;border:2px solid ${hasRune?'var(--epic)':'var(--border2)'};
+      border-radius:6px;display:flex;align-items:center;justify-content:center;
+      font-family:Cinzel,serif;font-size:14px;cursor:${hasRune?'not-allowed':'pointer'};
+      background:${hasRune?'rgba(168,68,238,.1)':'transparent'};
+      opacity:${hasRune?.6:1}`;
+    btn.textContent = face.isSplit ? `${face.number}|${face.runeValue}` : face.number;
+    btn.title = hasRune ? `Already has rune (${face.runeValue})` : `Apply rune to face ${face.number}`;
+
+    if (!hasRune) {
+      btn.onclick = () => {
+        document.querySelectorAll('#rune-faces div').forEach(b => b.style.borderColor='var(--border2)');
+        btn.style.borderColor = 'var(--epic)';
+        selectedFace = face.number;
+        document.getElementById('rune-value-picker').style.display = 'block';
+        buildValuePicker(face.number);
+      };
+    }
+    facesEl.appendChild(btn);
+  });
+
+  function buildValuePicker(faceNum) {
+    const vp = document.getElementById('rune-values');
+    vp.innerHTML = '';
+    [1,2,3,4,5,6].forEach(v => {
+      const btn2 = document.createElement('div');
+      btn2.style.cssText = `width:36px;height:36px;border:2px solid var(--border2);border-radius:6px;
+        display:flex;align-items:center;justify-content:center;font-family:Cinzel,serif;font-size:14px;cursor:pointer`;
+      btn2.textContent = v;
+      btn2.onclick = () => {
+        ov.classList.remove('active');
+        callback(die.uid, faceNum, v);
+      };
+      vp.appendChild(btn2);
+    });
+  }
+
+  document.getElementById('rune-value-picker').style.display = 'none';
+  ov.classList.add('active');
+};
+
+// ── Instant Window UI ────────────────────────────────────────────
+let _countdownInterval = null;
+
+window.showInstantWindowUI = function(phase, spells, duration) {
+  const win = document.getElementById('instant-window');
+  const spellsEl = document.getElementById('instant-spells');
+  spellsEl.innerHTML = '';
+
+  spells.forEach(spell => {
+    const btn = document.createElement('button');
+    btn.style.cssText = `font-family:Cinzel,serif;font-size:10px;padding:6px 12px;
+      border:1px solid var(--epic);border-radius:4px;background:rgba(168,68,238,.1);
+      color:var(--epic);cursor:pointer`;
+    btn.innerHTML = `${spell.icon||'⚔'} ${spell.name}`;
+    btn.onclick = () => window._game?.fsm?.playInstant(spell, null);
+    spellsEl.appendChild(btn);
+  });
+
+  win.classList.add('active');
+
+  // Countdown
+  const bar = document.getElementById('instant-countdown');
+  const start = Date.now();
+  if (_countdownInterval) clearInterval(_countdownInterval);
+  _countdownInterval = setInterval(() => {
+    const elapsed = Date.now() - start;
+    const pct = Math.max(0, 100 - (elapsed / duration * 100));
+    bar.style.width = pct + '%';
+    if (pct <= 0) { clearInterval(_countdownInterval); win.classList.remove('active'); }
+  }, 100);
+};
+
+window.hideInstantWindowUI = function() {
+  document.getElementById('instant-window').classList.remove('active');
+  if (_countdownInterval) clearInterval(_countdownInterval);
+};
+
+// ── Spell Panel (quick cast from button) ─────────────────────────
+window.showSpellPanel = function() {
+  const spells = window._game?.player?.spells || [];
+  if (!spells.length) return;
+  // For sorcery spells: show inline in a small tooltip
+  // For now: cast the first sorcery spell as demo
+  const sorcery = spells.filter(s => s.timing === 'sorcery');
+  if (sorcery.length === 1) {
+    window._game?.castSpell(sorcery[0].instanceId);
+  }
+  // Multiple spells: see BACKLOG in spec — spell picker UI pending
+};
+</script>
+</body>
+</html>
