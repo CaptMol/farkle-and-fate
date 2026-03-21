@@ -3,7 +3,7 @@
  * Auto-extracted from bundle. Edit this file.
  */
 
-import { calcScore, applyEndEnchants, isFarkle } from './scoring.js';
+import { calcScore, applyEndEnchants, isFarkle, isHotDice } from './scoring.js';
 
 /**
  * TurnState.js
