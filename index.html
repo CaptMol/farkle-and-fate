@@ -553,94 +553,81 @@ window._game.skipShop = function() {
 };
 
 // ── Victory Screen ───────────────────────────────────────────────
-window.showVictoryScreen = function(winner, player, enemy, challenges) {
+window.showVictoryScreen = function(winner, player, enemy) {
   const won = winner.id === 'player';
   document.getElementById('go-t').textContent = won ? '🏆 Victory!' : '☠ Defeated';
   document.getElementById('go-t').style.color = won ? 'var(--gold2)' : 'var(--red2)';
 
-  document.getElementById('go-b').innerHTML =
-    `<b>${winner.name}</b> wins!<br>${winner.total.toLocaleString()} pts · 🪙 ${winner.coins} Gold · Streak ${player.winStreak}`;
+  const nextRoundNum = won ? player.winStreak + 2 : 1;
+  const nextTarget   = won ? 10000 + (player.winStreak + 1) * 5000 : 10000;
+  const loserName    = won ? enemy.name : player.name;
+  document.getElementById('go-b').innerHTML = `
+    <b>${winner.name}</b> wins! · ${winner.total.toLocaleString()} pts<br>
+    <span style="color:var(--gold2)">Round ${nextRoundNum} target: ${nextTarget.toLocaleString()} pts</span>
+    <span style="color:var(--text-muted)"> · ${loserName} receives +50 🪙</span>
+  `;
 
   const ch = document.getElementById('go-challenges');
   ch.innerHTML = '';
 
   if (won) {
-    // ── Keep vs Fresh choice ──────────────────────────────────────
-    let keepDeck = false;
-    const keptRoundsNext = (player.keptRounds || 0) + 1;
+    // ── Carry-over instant spell picker ──────────────────────────
+    const instants = player.spells.filter(s => s.timing === 'instant');
+    let selectedSpellId = null;
 
-    const toggleWrap = document.createElement('div');
-    toggleWrap.style.cssText = `
-      display:flex;gap:8px;margin-bottom:14px;
-      border:1px solid var(--border2);border-radius:6px;overflow:hidden;
-    `;
+    if (instants.length > 0) {
+      const title = document.createElement('div');
+      title.style.cssText = `font-family:Cinzel,serif;font-size:11px;color:var(--text-muted);
+        letter-spacing:2px;text-align:center;margin-bottom:8px;text-transform:uppercase`;
+      title.textContent = 'Carry over one instant spell';
+      ch.appendChild(title);
 
-    function buildToggleBtn(label, desc, active, onclick) {
-      const b = document.createElement('div');
-      b.style.cssText = `
-        flex:1;padding:10px 8px;text-align:center;cursor:pointer;
-        transition:all .15s;
-        background:${active ? 'rgba(212,149,42,.15)' : 'transparent'};
-        border-right:1px solid var(--border2);
-      `;
-      b.innerHTML = `
-        <div style="font-family:Cinzel,serif;font-size:12px;font-weight:700;
-          color:${active ? 'var(--gold2)' : 'var(--text-dim)'}">${label}</div>
-        <div style="font-size:10px;color:var(--text-muted);margin-top:3px">${desc}</div>
-      `;
-      b.onclick = onclick;
-      return b;
+      const pickerEl = document.createElement('div');
+      pickerEl.style.cssText = 'display:flex;flex-direction:column;gap:6px;margin-bottom:14px';
+      ch.appendChild(pickerEl);
+
+      function refreshPicker() {
+        pickerEl.innerHTML = '';
+        instants.forEach(sp => {
+          const isSelected = sp.instanceId === selectedSpellId;
+          const row = document.createElement('div');
+          row.style.cssText = `
+            display:flex;align-items:center;gap:10px;padding:8px 12px;
+            border:1px solid ${isSelected ? 'var(--epic)' : 'var(--border2)'};
+            border-radius:6px;cursor:pointer;transition:all .15s;
+            background:${isSelected ? 'rgba(168,68,238,.12)' : 'transparent'};
+          `;
+          row.innerHTML = `
+            <span style="font-size:18px">${sp.icon || '✦'}</span>
+            <div style="flex:1">
+              <div style="font-family:Cinzel,serif;font-size:11px;
+                color:${isSelected ? 'var(--epic)' : 'var(--text-dim)'}">${sp.name}</div>
+              <div style="font-size:10px;color:var(--text-muted)">${sp.desc || ''}</div>
+            </div>
+            ${isSelected ? '<span style="color:var(--epic);font-size:13px">✓</span>' : ''}
+          `;
+          row.onclick = () => { selectedSpellId = isSelected ? null : sp.instanceId; refreshPicker(); };
+          pickerEl.appendChild(row);
+        });
+      }
+      refreshPicker();
     }
 
-    function refreshToggle() {
-      toggleWrap.innerHTML = '';
-      const keepDesc = `Target +${keptRoundsNext * 5000} · deck kept`;
-      const freshDesc = `Target stays · +100 🪙 · reset`;
+    const continueBtn = document.createElement('button');
+    continueBtn.className = 'btn';
+    continueBtn.style.cssText = 'width:100%;padding:12px;font-size:13px;justify-content:center';
+    continueBtn.textContent = `Continue → Round ${nextRoundNum}`;
+    continueBtn.onclick = () => window._game?.nextRound(true, selectedSpellId);
+    ch.appendChild(continueBtn);
 
-      const keepBtn  = buildToggleBtn('⚔ Keep Deck', keepDesc,  keepDeck, () => { keepDeck = true;  refreshToggle(); refreshChallenges(); });
-      const freshBtn = buildToggleBtn('✦ Start Fresh', freshDesc, !keepDeck, () => { keepDeck = false; refreshToggle(); refreshChallenges(); });
-      freshBtn.style.borderRight = 'none';
-      toggleWrap.appendChild(keepBtn);
-      toggleWrap.appendChild(freshBtn);
-    }
-
-    function refreshChallenges() {
-      challEl.innerHTML = '';
-      challenges.forEach(c => {
-        const baseTarget  = Math.round(10000 * c.targetMult);
-        const keepTarget  = baseTarget + keptRoundsNext * 5000;
-        const showTarget  = keepDeck ? keepTarget : baseTarget;
-        const goldNote    = keepDeck ? (c.goldBonus > 0 ? ` · +${c.goldBonus} 🪙` : '') : `+100 🪙${c.goldBonus > 0 ? ` +${c.goldBonus} 🪙` : ''}`;
-
-        const btn = document.createElement('button');
-        btn.className = 'btn';
-        btn.style.cssText = 'width:100%;justify-content:space-between;display:flex;align-items:center;padding:10px 14px';
-        btn.innerHTML = `
-          <span>${c.icon} ${c.label}</span>
-          <span style="font-size:11px;color:var(--text-muted)">${showTarget.toLocaleString()} pts${goldNote}</span>
-        `;
-        btn.onclick = () => window._game?.nextRound(c.id, won, keepDeck);
-        challEl.appendChild(btn);
-      });
-    }
-
-    ch.appendChild(toggleWrap);
-    const challEl = document.createElement('div');
-    challEl.style.cssText = 'display:flex;flex-direction:column;gap:8px';
-    ch.appendChild(challEl);
-
-    refreshToggle();
-    refreshChallenges();
   } else {
-    // Defeat: just restart options, no Keep/Fresh
-    challenges.forEach(c => {
-      const btn = document.createElement('button');
-      btn.className = 'btn';
-      btn.style.cssText = 'width:100%;justify-content:space-between;display:flex;align-items:center;padding:12px 16px';
-      btn.innerHTML = `<span>${c.icon} ${c.label}</span><span style="font-size:11px;color:var(--text-muted)">${c.desc}</span>`;
-      btn.onclick = () => window._game?.nextRound(c.id, won, false);
-      ch.appendChild(btn);
-    });
+    // Defeat: single restart button
+    const restartBtn = document.createElement('button');
+    restartBtn.className = 'btn';
+    restartBtn.style.cssText = 'width:100%;padding:12px;font-size:13px;justify-content:center';
+    restartBtn.textContent = 'Try Again → Round 1';
+    restartBtn.onclick = () => window._game?.nextRound(false, null);
+    ch.appendChild(restartBtn);
   }
 
   document.getElementById('go-ov').classList.add('active');

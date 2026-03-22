@@ -6,14 +6,14 @@ import { PlayerState } from './PlayerState.js';
 import { TurnState } from './TurnState.js';
 import { PhaseManager, PHASES } from './PhaseManager.js';
 import { mkStarterDeck, mkDie, applyRune } from './dice.js';
-import { buildOffer, buy } from './shop.js';
+import { buildOffer, buy, ShopState } from './shop.js';
 import { castSpell, useShieldCharge, hasShield, consumeFumble, consumeExtraDie } from './spells.js';
 import { greedyTurn } from './ai.js';
 import { getScorableUids } from './scoring.js';
 import { renderZone } from './render/renderZone.js';
 import { renderVault, invalidateVaultOrder, renderSpellCardBar } from './render/renderVault.js';
 import { renderHUD } from './render/renderHUD.js';
-import { ENEMIES, NEXT_ROUND_CHALLENGES, GOLD_CONFIG, ENEMY_TIERS } from './constants.js';
+import { ENEMIES, GOLD_CONFIG, ENEMY_TIERS } from './constants.js';
 import { SFX } from './audio.js';
 import { spawnParticles, spawnCoinParticles, showFloat } from './particles.js';
 
@@ -453,7 +453,7 @@ class Game {
   _handleVictory(winner) {
     SFX.victory?.();
     log('hi', `🏆 ${winner.name} wins!`);
-    (window.showVictoryScreen||((w)=>alert(w.name+" wins!")))(winner, this.player, this.enemy, NEXT_ROUND_CHALLENGES);
+    (window.showVictoryScreen||((w)=>alert(w.name+" wins!")))(winner, this.player, this.enemy);
   }
 
   // ── Shop ──────────────────────────────────────────────────────────────────
@@ -567,47 +567,41 @@ class Game {
 
   // ── Next Round ────────────────────────────────────────────────────────────
 
-  nextRound(challengeId, winnerIsPlayer, keepDeck = false) {
-    const challenge = NEXT_ROUND_CHALLENGES.find(c => c.id === challengeId);
-    if (!challenge) return;
-
-    const baseTarget = Math.round(10000 * challenge.targetMult);
-
+  // winnerIsPlayer: bool. carryOverSpellInstanceId: one instant spell to keep (or null).
+  nextRound(winnerIsPlayer, carryOverSpellInstanceId = null) {
     if (winnerIsPlayer) {
-      if (keepDeck) {
-        // Keep Deck: target scales up per consecutive kept round
-        this.player.keptRounds++;
-        this.player.target = baseTarget + this.player.keptRounds * 5000;
-      } else {
-        // Start Fresh: reset deck progression, +100 gold consolation
-        this.player.keptRounds = 0;
-        this.player.target     = baseTarget;
-        this.player.coins     += 100;  // consolation gold
-        this.player.resetEnchants();
-      }
-      this.enemy.target  = 10000;
-      this.player.coins += challenge.goldBonus;
-      this.enemy.coins  += 50;
+      this.player.winStreak++;
+      const nextTarget = 10000 + this.player.winStreak * 5000;
+      this.player.target = nextTarget;
+      this.enemy.target  = nextTarget;
+      this.enemy.coins  += 50;  // loser consolation
     } else {
+      this.player.winStreak = 0;
       this.player.target = 10000;
-      this.enemy.target  = baseTarget;
-      this.enemy.coins  += challenge.goldBonus;
-      this.player.coins += 50;
-      this.player.resetEnchants();
+      this.enemy.target  = 10000;
+      this.player.coins += 50;  // loser consolation
     }
 
+    // Always reset enchants for both
+    this.player.resetEnchants();
+    this.enemy.resetEnchants();
+
+    // Spells reset — keep one carry-over instant if player won
+    const carryOver = carryOverSpellInstanceId
+      ? this.player.spells.find(s => s.instanceId === carryOverSpellInstanceId)
+      : null;
+    this.player.spells = carryOver ? [{ ...carryOver }] : [];
+    this.enemy.spells  = [];
+
+    // Dice: kept (no action needed)
     this.player.total = 0;
     this.enemy.total  = 0;
-    this.player.shop  = new (Object.getPrototypeOf(this.player.shop).constructor)(this.player);
-    this.enemy.shop   = new (Object.getPrototypeOf(this.enemy.shop).constructor)(this.enemy);
+    this.player.shop  = new ShopState(this.player);
+    this.enemy.shop   = new ShopState(this.enemy);
 
-    if (winnerIsPlayer) this.player.winStreak++;
-    else { this.player.winStreak = 0; }
-
-    // Scale enemy difficulty based on player's win streak
+    // Scale enemy difficulty based on updated win streak
     this.enemy.tier = Math.min(3, Math.floor(this.player.winStreak / 3));
-    const tierData = ENEMY_TIERS[this.enemy.tier];
-    this.enemy.coins += tierData.bonusCoins;
+    this.enemy.coins += ENEMY_TIERS[this.enemy.tier].bonusCoins;
     this.enemy.name = pickEnemyName(this.enemy.tier);
 
     this.playerTurn = TurnState.fresh();

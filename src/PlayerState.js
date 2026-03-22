@@ -42,7 +42,6 @@ export class PlayerState {
 
     // Meta
     this.winStreak  = 0;
-    this.keptRounds = 0;   // how many consecutive rounds the deck was kept
     this.tier       = 0;
 
     // Avatar (placeholder for pixel art)
