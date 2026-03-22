@@ -397,10 +397,32 @@ class Game {
     log('hi', `✓ ${score.toLocaleString()} pts banked! (+${earned} 🪙)`);
     SFX.bank?.(score);
 
-    showFloat(`+${score.toLocaleString()}`, score >= 1000 ? 'var(--epic)' : 'var(--green2)');
+    // Anchor score float to score display element
+    const scoreEl = document.getElementById(active.isHuman ? 's-player-score' : 's-enemy-score');
+    if (scoreEl) {
+      const r = scoreEl.getBoundingClientRect();
+      const sx = r.left + r.width / 2;
+      const sy = r.top;
+      const scoreColor = score >= 1000 ? 'var(--epic)' : 'var(--green2)';
+      showFloat(`+${score.toLocaleString()}`, scoreColor, sx - 60, sy - 10);
+      spawnParticles(sx, sy, score >= 1000 ? '#a844ee' : '#32b862', score >= 2000 ? 60 : 35);
+    } else {
+      showFloat(`+${score.toLocaleString()}`, score >= 1000 ? 'var(--epic)' : 'var(--green2)');
+    }
+
+    // Anchor gold float to gold display element
     setTimeout(() => {
       SFX.coin?.();
-      showFloat(`+${earned} 🪙`, 'var(--gold)');
+      const goldEl = document.getElementById(active.isHuman ? 'p-gold-vault' : 'e-gold-vault');
+      if (goldEl && earned > 0) {
+        const gr = goldEl.getBoundingClientRect();
+        const gx = gr.left + gr.width / 2;
+        const gy = gr.top;
+        showFloat(`+${earned} 🪙`, 'var(--gold)', gx - 40, gy - 10);
+        spawnCoinParticles(gx, gy);
+      } else if (earned > 0) {
+        showFloat(`+${earned} 🪙`, 'var(--gold)');
+      }
     }, 400);
 
     this._setTurn(active, TurnState.fresh());
