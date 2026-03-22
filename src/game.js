@@ -558,30 +558,34 @@ class Game {
 
   // ── Next Round ────────────────────────────────────────────────────────────
 
-  nextRound(challengeId, winnerIsPlayer) {
+  nextRound(challengeId, winnerIsPlayer, keepDeck = false) {
     const challenge = NEXT_ROUND_CHALLENGES.find(c => c.id === challengeId);
     if (!challenge) return;
 
-    const newTarget = Math.round(10000 * challenge.targetMult);
+    const baseTarget = Math.round(10000 * challenge.targetMult);
 
     if (winnerIsPlayer) {
-      this.player.target = newTarget;
+      if (keepDeck) {
+        // Keep Deck: target scales up per consecutive kept round
+        this.player.keptRounds++;
+        this.player.target = baseTarget + this.player.keptRounds * 5000;
+      } else {
+        // Start Fresh: reset deck progression, +100 gold consolation
+        this.player.keptRounds = 0;
+        this.player.target     = baseTarget;
+        this.player.coins     += 100;  // consolation gold
+        this.player.resetEnchants();
+      }
       this.enemy.target  = 10000;
-    } else {
-      this.player.target = 10000;
-      this.enemy.target  = newTarget;
-    }
-
-    if (winnerIsPlayer) {
       this.player.coins += challenge.goldBonus;
       this.enemy.coins  += 50;
     } else {
+      this.player.target = 10000;
+      this.enemy.target  = baseTarget;
       this.enemy.coins  += challenge.goldBonus;
       this.player.coins += 50;
+      this.player.resetEnchants();
     }
-
-    if (winnerIsPlayer) this.player.resetEnchants();
-    else                this.enemy.resetEnchants();
 
     this.player.total = 0;
     this.enemy.total  = 0;

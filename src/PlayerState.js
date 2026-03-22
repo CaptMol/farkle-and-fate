@@ -41,8 +41,9 @@ export class PlayerState {
     this.shop = new ShopState(this);
 
     // Meta
-    this.winStreak = 0;
-    this.tier      = 0;
+    this.winStreak  = 0;
+    this.keptRounds = 0;   // how many consecutive rounds the deck was kept
+    this.tier       = 0;
 
     // Avatar (placeholder for pixel art)
     this.avatar = {
