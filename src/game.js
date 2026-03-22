@@ -479,6 +479,7 @@ class Game {
   _continueToEnemyShop(enemy) {
     // Enemy shop is fully silent — never touches the UI overlay.
     // Process all pending shop windows in one synchronous pass.
+    const bought = [];
     while (enemy.shop.hasPending) {
       enemy.shop.openNext();
       const offers = buildOffer(enemy);
@@ -486,9 +487,17 @@ class Game {
       const decision = greedyTurn(PHASES.SHOP, null, enemy, this.player);
       if (decision.action === 'buy') {
         const result = buy(decision.item, enemy, mkDie);
-        if (result.success) log('ei', `${enemy.name} buys: ${decision.item.name}`);
+        if (result.success) {
+          log('ei', `${enemy.name} buys: ${decision.item.name}`);
+          bought.push(decision.item);
+        }
       }
       enemy.shop.close();
+    }
+    if (bought.length > 0) {
+      const visible = bought.filter(i => i.type !== 'spell');
+      const hidden  = bought.filter(i => i.type === 'spell').length;
+      window.showEnemyShopToast?.(enemy.name, visible, hidden);
     }
     this.fsm.afterShop();
   }
