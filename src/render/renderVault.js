@@ -191,32 +191,36 @@ function renderEnchantments(playerState, enchListId) {
   const bar = document.getElementById(enchListId);
   if (!bar) return;
 
-  const pp = playerState.enchants.perPick;
-  const et = playerState.enchants.endOfTurn;
-  const parts = [];
-
-  const rc = { rare:'var(--rare)', epic:'var(--epic)', legendary:'var(--legendary)' };
-
-  if (pp.ones_bonus)    parts.push({ icon:'1',  label:'Ones',     val:`${100+pp.ones_bonus}pts`,    col:rc.rare });
-  if (pp.fives_bonus)   parts.push({ icon:'5',  label:'Fives',    val:`${50+pp.fives_bonus}pts`,    col:rc.rare });
-  if (pp.street_bonus)  parts.push({ icon:'↗',  label:'Streets',  val:`+${pp.street_bonus}`,        col:rc.epic });
-  if (pp.triplet_bonus) parts.push({ icon:'3×', label:'Triplets', val:`+${pp.triplet_bonus}`,       col:rc.epic });
-  if (et.double_score)  parts.push({ icon:'×2', label:'Double',   val:'all pts ×2',                 col:rc.legendary });
-
-  if (!parts.length) {
+  const log = playerState.enchantLog || [];
+  if (!log.length) {
     bar.innerHTML = `<div style="color:var(--text-muted);font-size:11px;padding:2px 0">none</div>`;
     return;
   }
 
-  bar.innerHTML = parts.map(p => `
-    <div style="display:flex;align-items:center;gap:6px;padding:5px 7px;margin-bottom:4px;
-      border-radius:4px;border:1px solid ${p.col}66;background:${p.col}18">
-      <span style="font-family:Cinzel,serif;font-size:14px;font-weight:bold;
-        color:${p.col};width:24px;text-align:center;text-shadow:0 0 8px ${p.col}">${p.icon}</span>
-      <span style="flex:1;font-size:14px;color:var(--text);font-family:Cinzel,serif">${p.label}</span>
-      <span style="font-family:Cinzel,serif;font-size:14px;font-weight:bold;color:${p.col}">${p.val}</span>
-    </div>
-  `).join('');
+  const rc = {
+    common:   'var(--common)',
+    rare:     'var(--rare)',
+    epic:     'var(--epic)',
+    legendary:'var(--legendary)',
+    godlike:  'var(--godlike)',
+  };
+
+  bar.innerHTML = log.map(e => {
+    const col = rc[e.rarity] || 'var(--text-dim)';
+    return `
+      <div style="display:flex;align-items:center;gap:6px;padding:5px 7px;margin-bottom:4px;
+        border-radius:4px;border:1px solid ${col}66;background:${col}18"
+        title="${e.desc}">
+        <span style="font-size:14px;width:20px;text-align:center">${e.icon}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-family:Cinzel,serif;font-size:11px;color:${col};
+            white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.name}</div>
+          <div style="font-size:10px;color:var(--text-muted);white-space:nowrap;
+            overflow:hidden;text-overflow:ellipsis">${e.desc}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 // ── Rune Bar ──────────────────────────────────────────────────────────────

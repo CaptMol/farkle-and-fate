@@ -33,6 +33,7 @@ export class PlayerState {
       perPick:   {},          // applied during calcScore()
       endOfTurn: {}           // applied during bankScore()
     };
+    this.enchantLog = [];     // ordered list of individual purchases for display
     this.spells   = [];       // consumable spells (hidden from opponent)
     this.runes    = [];       // rune pouch — bought, not yet equipped
 
@@ -101,10 +102,19 @@ export class PlayerState {
         this.enchants.endOfTurn.double_score = true;
         break;
     }
+
+    // Record individual purchase for tile display
+    this.enchantLog.push({
+      name:    enchant.name,
+      icon:    enchant.icon || '✦',
+      desc:    enchant.desc || '',
+      rarity:  enchant.rarity || 'common',
+    });
   }
 
   resetEnchants() {
-    this.enchants = { perPick: {}, endOfTurn: {} };
+    this.enchants    = { perPick: {}, endOfTurn: {} };
+    this.enchantLog  = [];
   }
 
   // ── Gold ─────────────────────────────────────────────────────────────────
