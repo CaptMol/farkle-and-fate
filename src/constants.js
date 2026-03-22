@@ -59,15 +59,15 @@ export const SHOP_ITEMS = [
   { id: 'enc_double',    name: 'Double Essence', type: 'enchantment', rarity: 'legendary', icon: '⚡', cost: 60,
     eid: 'double_score', timing: 'endOfTurn', value: true, desc: 'Total turn score ×2 (once per run)' },
 
-  // ── ATTACK SPELLS (sorcery — own turn, multiplies enemy target from base 10000) ──
+  // ── ATTACK SPELLS (sorcery — own turn, adds flat value to enemy's current target) ──
   { id: 'sp_curse_c',  name: 'Minor Curse',   type: 'spell', category: 'attack', rarity: 'common',    icon: '🎯',
-    cost: 25,  timing: 'sorcery', effect: 'target_mult', value: 1.1,  desc: 'Enemy target ×1.1 of base → 11.000 pts' },
+    cost: 25,  timing: 'sorcery', effect: 'target_add', value: 1000,  desc: 'Enemy target +1.000 pts' },
   { id: 'sp_curse_r',  name: 'Hex',           type: 'spell', category: 'attack', rarity: 'rare',      icon: '🎯',
-    cost: 50,  timing: 'sorcery', effect: 'target_mult', value: 1.25, desc: 'Enemy target ×1.25 of base → 12.500 pts' },
+    cost: 50,  timing: 'sorcery', effect: 'target_add', value: 2500,  desc: 'Enemy target +2.500 pts' },
   { id: 'sp_curse_e',  name: 'Greater Curse', type: 'spell', category: 'attack', rarity: 'epic',      icon: '🎯',
-    cost: 75,  timing: 'sorcery', effect: 'target_mult', value: 1.5,  desc: 'Enemy target ×1.5 of base → 15.000 pts' },
+    cost: 75,  timing: 'sorcery', effect: 'target_add', value: 5000,  desc: 'Enemy target +5.000 pts' },
   { id: 'sp_curse_l',  name: 'Doom',          type: 'spell', category: 'attack', rarity: 'legendary', icon: '🎯',
-    cost: 100, timing: 'sorcery', effect: 'target_mult', value: 2.0,  desc: 'Enemy target ×2 of base → 20.000 pts' },
+    cost: 100, timing: 'sorcery', effect: 'target_add', value: 10000, desc: 'Enemy target +10.000 pts' },
 
   { id: 'sp_fumble',   name: 'Fumble',        type: 'spell', category: 'attack', rarity: 'epic',      icon: '🎲',
     cost: 75,  timing: 'sorcery', effect: 'one_die_less', value: 1, desc: 'Enemy plays next turn with one fewer die' },

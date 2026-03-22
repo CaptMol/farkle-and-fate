@@ -34,15 +34,11 @@ export function castSpell(spell, caster, target, turnState, targetUid = null) {
 
   switch (spell.effect) {
 
-    // ── Attack: Target Multiplier (always from base 10000) ──────────────
-    case 'target_mult': {
-      const BASE = 10000;
-      const newTarget = Math.round(BASE * spell.value);
-      const prev = target.target;
-      target.target = Math.max(target.target, newTarget);
-      const added = target.target - prev;
+    // ── Attack: Target Add (additive flat bonus to current target) ──────
+    case 'target_add': {
+      target.target += spell.value;
       result.success = true;
-      result.logMsg = `🎯 ${spell.name}: ${target.name}'s target → ${target.target.toLocaleString()} pts${added > 0 ? ` (+${added.toLocaleString()})` : ''}`;
+      result.logMsg = `🎯 ${spell.name}: ${target.name}'s target → ${target.target.toLocaleString()} pts (+${spell.value.toLocaleString()})`;
       result.animation = { type: 'target_change', player: 'enemy', value: target.target };
       break;
     }
