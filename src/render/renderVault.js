@@ -168,18 +168,45 @@ function renderDiceList(playerState, dcollId, isHuman) {
       };
     }
 
+    // Rune edit hint — only shown when human has runes and die can accept one
+    const canEdit = isHuman && hasRuneInPouch && die.canEquipRune;
+    const editHint = canEdit
+      ? `<span style="font-size:9px;color:var(--epic);margin-left:4px;opacity:.85">✏ rune</span>`
+      : '';
+
     card.innerHTML = `
-      <span style="font-size:14px">${die.icon}</span>
+      <!-- Die face visual -->
+      <div style="
+        width:34px;height:34px;flex-shrink:0;
+        border:2px solid ${rc[die.rarity]};border-radius:6px;
+        display:flex;align-items:center;justify-content:center;
+        font-size:20px;
+        background:linear-gradient(160deg,rgba(0,0,0,.4),rgba(0,0,0,.2));
+        box-shadow:0 0 6px ${rc[die.rarity]}44,inset 0 0 6px rgba(0,0,0,.4);
+      ">${die.icon}</div>
+
+      <!-- Info column -->
       <div style="flex:1;min-width:0">
-        <div style="font-family:Cinzel,serif;font-size:11px;
-          color:${rc[die.rarity]};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
-          ${die.name}
+        <div style="
+          font-family:Cinzel,serif;font-size:11px;font-weight:600;
+          color:${inPlay ? rc[die.rarity] : 'var(--text-dim)'};
+          white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+          text-shadow:${inPlay ? `0 0 8px ${rc[die.rarity]}66` : 'none'};
+        ">${die.name}</div>
+        <div style="display:flex;align-items:center;margin-top:3px;gap:3px">
+          <span style="font-family:Cinzel,serif;font-size:8px;letter-spacing:1px;
+            color:${rc[die.rarity]};opacity:.75;text-transform:uppercase">${die.rarity}</span>
+          <span style="color:var(--border2);font-size:8px">·</span>
+          ${slotDots}
+          ${editHint}
         </div>
-        <div style="margin-top:2px">${slotDots}${runePreview}</div>
+        ${runePreview ? `<div style="margin-top:2px">${runePreview}</div>` : ''}
       </div>
-      ${inPlay
-        ? `<span style="font-size:9px;color:var(--green2)">●</span>`
-        : `<span style="font-size:9px;color:var(--text-muted)">○</span>`}
+
+      <!-- In-deck indicator -->
+      <span style="font-size:10px;flex-shrink:0;${inPlay ? `color:var(--green2)` : 'color:var(--text-muted);opacity:.5'}">
+        ${inPlay ? '●' : '○'}
+      </span>
     `;
     cont.appendChild(card);
   });
