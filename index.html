@@ -44,14 +44,15 @@
   <div style="flex:1;max-width:520px;padding:0 20px">
     <div class="prog-label-row">
       <span style="color:var(--green2)">▶ PLAYER</span>
+      <span id="next-shop-label" style="color:var(--gold-dim);font-size:9px;letter-spacing:0"></span>
       <span style="color:var(--red2)">ENEMY ◀</span>
     </div>
     <div class="prog-wrap">
-      <div class="prog-bar-outer">
+      <div class="prog-bar-outer" id="prog-player-outer">
         <div class="prog-fill-player" id="prog-player" style="width:0%"></div>
       </div>
       <div class="prog-divider"></div>
-      <div class="prog-bar-outer">
+      <div class="prog-bar-outer" id="prog-enemy-outer">
         <div class="prog-fill-enemy" id="prog-enemy" style="width:0%"></div>
       </div>
     </div>

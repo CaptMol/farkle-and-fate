@@ -24,7 +24,7 @@ export class ShopState {
   /** Check if new shop windows triggered after banking score */
   checkMilestones(newTotal) {
     const newShops = [];
-    for (let t = 500; t <= newTotal; t += 500) {
+    for (let t = 2500; t <= newTotal; t += 2500) {
       if (!this.milestones.has(t)) {
         this.milestones.add(t);
         this.queue.push({ triggeredAt: t });

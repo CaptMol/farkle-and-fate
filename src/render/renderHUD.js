@@ -13,10 +13,9 @@ export function renderHUD(player, enemy, phase) {
   renderRoundInfo(player);
 }
 
+const SHOP_INTERVAL = 2500;
+
 function renderProgressBars(player, enemy) {
-  // fill% = pts/target — works for any target value (10k, 15k, 20k)
-  // Player bar grows left→right, Enemy bar grows right→left
-  // Symmetry: each bar is 50% of available width, fills proportionally
   const pPct = Math.min(100, (player.total / player.target) * 100);
   const ePct = Math.min(100, (enemy.total  / enemy.target)  * 100);
 
@@ -25,17 +24,45 @@ function renderProgressBars(player, enemy) {
   if (pp) pp.style.width = pPct + '%';
   if (pe) pe.style.width = ePct + '%';
 
+  // Shop tick marks — small vertical lines at each 2500-pt milestone
+  addShopTicks('prog-player-outer', player.target, 'left');
+  addShopTicks('prog-enemy-outer',  enemy.target,  'right');
+
   // Scores
   const ps = document.getElementById('s-player-score');
   const es = document.getElementById('s-enemy-score');
   if (ps) ps.textContent = player.total.toLocaleString();
   if (es) es.textContent = enemy.total.toLocaleString();
 
-  // Targets — update when changed by spells (target_mult, steal_life)
+  // Targets
   const pt = document.getElementById('s-player-target');
   const et = document.getElementById('s-enemy-target');
   if (pt) pt.textContent = `/ ${player.target.toLocaleString()}`;
   if (et) et.textContent = `${enemy.target.toLocaleString()} /`;
+
+  // "Next shop: X pts" label
+  const labelEl = document.getElementById('next-shop-label');
+  if (labelEl) {
+    const nextShop = (Math.floor(player.total / SHOP_INTERVAL) + 1) * SHOP_INTERVAL;
+    labelEl.textContent = nextShop <= player.target
+      ? `Next shop: ${(nextShop - player.total).toLocaleString()} pts`
+      : '';
+  }
+}
+
+function addShopTicks(outerId, target, side) {
+  const outer = document.getElementById(outerId);
+  if (!outer) return;
+  // Remove old ticks, keep the fill element
+  outer.querySelectorAll('.shop-tick').forEach(el => el.remove());
+  for (let ms = SHOP_INTERVAL; ms < target; ms += SHOP_INTERVAL) {
+    const pct = (ms / target) * 100;
+    const tick = document.createElement('div');
+    tick.className = 'shop-tick';
+    tick.style.cssText = `position:absolute;top:0;bottom:0;width:1px;
+      ${side}:${pct}%;background:rgba(255,200,100,.3);pointer-events:none`;
+    outer.appendChild(tick);
+  }
 }
 
 function renderTurnIndicator(phase, player, enemy) {
