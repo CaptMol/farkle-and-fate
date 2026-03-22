@@ -12,7 +12,7 @@ import { greedyTurn } from './ai.js';
 import { getScorableUids } from './scoring.js';
 import { renderZone } from './render/renderZone.js';
 import { renderVault, invalidateVaultOrder, renderSpellCardBar } from './render/renderVault.js';
-import { renderHUD } from './render/renderHUD.js';
+import { renderHUD, animateScoreCount } from './render/renderHUD.js';
 import { ENEMIES, GOLD_CONFIG, ENEMY_TIERS } from './constants.js';
 import { SFX } from './audio.js';
 import { spawnParticles, spawnCoinParticles, showFloat } from './particles.js';
@@ -392,6 +392,7 @@ class Game {
     const turn   = this._getTurn(active);
     const score  = turn.endScore(active.enchants);
     const earned = active.earnGold(score);
+    const prevTotal = active.total;
     const { won } = active.bankScore(score);
 
     log('hi', `✓ ${score.toLocaleString()} pts banked! (+${earned} 🪙)`);
@@ -427,6 +428,10 @@ class Game {
 
     this._setTurn(active, TurnState.fresh());
     this._renderAll();
+
+    // Count-up animation: score ticks from old total to new total
+    const scoreElId = active.isHuman ? 's-player-score' : 's-enemy-score';
+    animateScoreCount(scoreElId, prevTotal, active.total);
 
     this.fsm.onEndTurn(won);
   }

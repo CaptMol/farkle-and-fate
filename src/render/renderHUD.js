@@ -28,11 +28,11 @@ function renderProgressBars(player, enemy) {
   addShopTicks('prog-player-outer', player.target, 'left');
   addShopTicks('prog-enemy-outer',  enemy.target,  'right');
 
-  // Scores
+  // Scores (skip if a count-up animation is already running on this element)
   const ps = document.getElementById('s-player-score');
   const es = document.getElementById('s-enemy-score');
-  if (ps) ps.textContent = player.total.toLocaleString();
-  if (es) es.textContent = enemy.total.toLocaleString();
+  if (ps && !ps._counting) ps.textContent = player.total.toLocaleString();
+  if (es && !es._counting) es.textContent = enemy.total.toLocaleString();
 
   // Targets
   const pt = document.getElementById('s-player-target');
@@ -84,4 +84,29 @@ function renderTurnIndicator(phase, player, enemy) {
 function renderRoundInfo(player) {
   const el = document.getElementById('run-round');
   if (el) el.textContent = `Round ${player.winStreak + 1}`;
+}
+
+/**
+ * Animate a score element counting up from fromVal to toVal.
+ * Uses ease-out cubic so it starts fast and lands smoothly on the final number.
+ * Sets el._counting = true while running so renderHUD doesn't overwrite it.
+ */
+export function animateScoreCount(elementId, fromVal, toVal, duration = 750) {
+  const el = document.getElementById(elementId);
+  if (!el || fromVal === toVal) return;
+  el._counting = true;
+  const start = performance.now();
+  const delta = toVal - fromVal;
+  function tick(now) {
+    const t = Math.min(1, (now - start) / duration);
+    const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
+    el.textContent = Math.round(fromVal + delta * eased).toLocaleString();
+    if (t < 1) {
+      requestAnimationFrame(tick);
+    } else {
+      el.textContent = toVal.toLocaleString();
+      el._counting = false;
+    }
+  }
+  requestAnimationFrame(tick);
 }
