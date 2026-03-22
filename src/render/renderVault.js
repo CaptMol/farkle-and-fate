@@ -17,14 +17,51 @@ export function renderVault(playerState, domIds, options = {}) {
   renderSpells(playerState, domIds.spellList, isHuman);
   renderDeckCount(playerState, domIds.deckCt);
   renderGold(playerState, domIds.gold);
-  renderPlayerHeader(playerState, domIds.nameEl, domIds.titleEl);
+  renderPlayerHeader(playerState, domIds.nameEl, domIds.titleEl, isHuman);
 }
 
 // ── Player Header (name + avatar placeholder) ─────────────────────────────
 
-function renderPlayerHeader(playerState, nameEl, titleEl) {
+function renderPlayerHeader(playerState, nameEl, titleEl, isHuman) {
   const nameDiv = document.getElementById(nameEl);
-  if (nameDiv) nameDiv.textContent = playerState.name;
+  if (nameDiv) {
+    // Don't overwrite while the user is actively editing
+    if (!nameDiv.querySelector('input')) {
+      nameDiv.textContent = playerState.name;
+    }
+    if (isHuman && !nameDiv.dataset.editableSet) {
+      nameDiv.dataset.editableSet = '1';
+      nameDiv.style.cursor = 'pointer';
+      nameDiv.title = 'Click to rename';
+      nameDiv.addEventListener('click', () => {
+        if (nameDiv.querySelector('input')) return;
+        const current = playerState.name;
+        const input = document.createElement('input');
+        input.value = current;
+        input.maxLength = 20;
+        input.style.cssText = `
+          font-family:Cinzel,serif;font-size:inherit;color:inherit;
+          background:transparent;border:none;border-bottom:1px solid var(--gold);
+          outline:none;width:${Math.max(60, current.length * 9)}px;padding:0;
+        `;
+        nameDiv.textContent = '';
+        nameDiv.appendChild(input);
+        input.focus();
+        input.select();
+
+        function confirm() {
+          const val = input.value.trim().slice(0, 20);
+          playerState.name = val || current;
+          nameDiv.textContent = playerState.name;
+        }
+        input.addEventListener('blur', confirm, { once: true });
+        input.addEventListener('keydown', e => {
+          if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+          if (e.key === 'Escape') { input.value = current; input.blur(); }
+        });
+      });
+    }
+  }
 
   const titleDiv = document.getElementById(titleEl);
   if (titleDiv) titleDiv.textContent = playerState.avatar?.title || '';
