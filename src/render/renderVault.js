@@ -326,14 +326,17 @@ function renderSpells(playerState, spellListId, isHuman) {
   }
 }
 
-// ── Spell Card Bar (MTG-style, fixed bottom) ──────────────────────────────
+// ── Spell Card Bar (MTG-style, fixed bottom, peek + hover-reveal) ─────────
+
+const INSTANT_PHASES = new Set([
+  'INSTANT_W1', 'INSTANT_W2', 'INSTANT_FARKLE', 'INSTANT_VICTORY'
+]);
 
 export function renderSpellCardBar(playerState, phase) {
   const bar = document.getElementById('spell-card-bar');
   if (!bar) return;
 
   const spells = playerState?.spells || [];
-  const canCast = phase === 'PICK';
 
   if (!spells.length) {
     bar.style.display = 'none';
@@ -343,57 +346,91 @@ export function renderSpellCardBar(playerState, phase) {
   bar.style.display = 'flex';
   bar.style.pointerEvents = 'auto';
 
-  const catCol = { attack:'var(--red2)', defense:'var(--rare)', utility:'var(--epic)' };
+  // Glow state per timing
+  const sorceryActive  = phase === 'PICK';
+  const instantActive  = INSTANT_PHASES.has(phase);
+
+  const CARD_H   = 156;  // full card height px
+  const PEEK_H   = 44;   // px visible at rest (top of card)
+  const HIDE_Y   = CARD_H - PEEK_H;  // translateY at rest
+
+  const catCol = {
+    attack:  '#cc3a28',
+    defense: '#3d88dd',
+    utility: '#a844ee',
+  };
+  // Dark text for parchment background
+  const catDark = {
+    attack:  '#8a1810',
+    defense: '#1a4880',
+    utility: '#6a22aa',
+  };
 
   bar.innerHTML = spells.map(s => {
-    const col = catCol[s.category] || 'var(--text-muted)';
-    const timingLabel = s.timing === 'instant' ? '⚡ Instant' : '✦ Sorcery';
-    const castable = canCast && s.timing !== 'instant';
-    const opacity = castable ? '1' : '0.5';
+    const col     = catCol[s.category]  || '#806040';
+    const darkCol = catDark[s.category] || '#4a3020';
+    const isInstant  = s.timing === 'instant';
+    const isSorcery  = !isInstant;
+
+    const castable = isSorcery && sorceryActive;
+    const glowing  = castable || (isInstant && instantActive);
+    const glowShadow = glowing
+      ? `0 0 18px ${col}cc, 0 0 36px ${col}66, 0 4px 12px rgba(0,0,0,.8)`
+      : `0 4px 12px rgba(0,0,0,.8)`;
+
+    const timingLabel = isInstant ? '⚡ Instant' : '✦ Sorcery';
     const cursor = castable ? 'pointer' : 'default';
+    const dimFilter = glowing ? 'none' : 'grayscale(.4) brightness(.75)';
 
     return `
       <div
         data-spell-id="${s.instanceId}"
         style="
-          width:82px;min-height:116px;
+          width:88px;height:${CARD_H}px;
           border:2px solid ${col};border-radius:8px;
-          background:linear-gradient(180deg,var(--panel2) 0%,var(--panel) 100%);
-          box-shadow:0 0 10px ${col}44,3px 3px 0 rgba(0,0,0,.8);
+          background:linear-gradient(180deg,#f5e8c8 0%,#ecddb5 100%);
+          box-shadow:${glowShadow};
           display:flex;flex-direction:column;
           cursor:${cursor};pointer-events:auto;
-          opacity:${opacity};
-          transition:transform .12s,box-shadow .12s,opacity .2s;
-          position:relative;overflow:hidden;
-          flex-shrink:0;
+          filter:${dimFilter};
+          transform:translateY(${HIDE_Y}px);
+          transition:transform .2s ease, box-shadow .2s, filter .2s;
+          position:relative;overflow:hidden;flex-shrink:0;
         "
-        onmouseenter="if(${castable}){this.style.transform='translateY(-12px) scale(1.05)';this.style.boxShadow='0 0 20px ${col}88,3px 3px 0 rgba(0,0,0,.8)'}"
-        onmouseleave="this.style.transform='';this.style.boxShadow='0 0 10px ${col}44,3px 3px 0 rgba(0,0,0,.8)'"
+        onmouseenter="
+          this.style.transform='translateY(0)';
+          this.style.boxShadow='${glowing ? `0 0 24px ${col}cc,0 0 48px ${col}55,0 4px 16px rgba(0,0,0,.9)` : `0 0 16px rgba(0,0,0,.9),0 -4px 20px rgba(0,0,0,.5)`}';
+        "
+        onmouseleave="
+          this.style.transform='translateY(${HIDE_Y}px)';
+          this.style.boxShadow='${glowShadow}';
+        "
         onclick="${castable ? `window._game?.castSpell('${s.instanceId}')` : ''}"
       >
-        <!-- Color bar top -->
-        <div style="height:4px;background:${col};box-shadow:0 0 8px ${col}"></div>
-        <!-- Category badge -->
-        <div style="font-family:Cinzel,serif;font-size:7px;letter-spacing:1px;
-          color:${col};text-align:center;padding:3px 0;text-transform:uppercase;
-          border-bottom:1px solid ${col}33">${timingLabel}</div>
-        <!-- Icon -->
-        <div style="font-size:26px;text-align:center;padding:6px 0 4px;
-          text-shadow:0 0 12px ${col}66">${s.icon || '⚔'}</div>
-        <!-- Name -->
-        <div style="font-family:Cinzel,serif;font-size:9px;font-weight:700;
-          color:${col};text-align:center;padding:0 5px 4px;
-          white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-          text-shadow:0 0 6px ${col}44">${s.name}</div>
-        <!-- Desc -->
-        <div style="font-size:8px;color:var(--text-dim);text-align:center;
-          padding:0 5px 6px;line-height:1.35;flex:1">${s.desc || ''}</div>
-        <!-- Uncastable overlay -->
-        ${!castable ? `<div style="position:absolute;inset:0;background:rgba(0,0,0,.35);border-radius:6px;
-          display:flex;align-items:center;justify-content:center;font-size:8px;
-          color:var(--text-muted);font-family:Cinzel,serif;text-align:center;padding:4px">
-          ${s.timing === 'instant' ? 'Instant — auto' : 'Cast on your turn'}
-        </div>` : ''}
+        <!-- Top color band (visible in peek state) -->
+        <div style="
+          height:${PEEK_H}px;flex-shrink:0;
+          background:linear-gradient(180deg,${col} 0%,${col}cc 60%,${col}88 100%);
+          display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+          border-radius:5px 5px 0 0;
+        ">
+          <div style="font-size:18px;line-height:1">${s.icon || '⚔'}</div>
+          <div style="font-family:Cinzel,serif;font-size:7px;letter-spacing:1px;
+            color:rgba(255,255,255,.9);text-transform:uppercase">${timingLabel}</div>
+        </div>
+        <!-- Divider -->
+        <div style="height:2px;background:${col};flex-shrink:0"></div>
+        <!-- Card face (parchment) -->
+        <div style="flex:1;display:flex;flex-direction:column;padding:6px 5px 5px;">
+          <div style="font-family:Cinzel,serif;font-size:10px;font-weight:700;
+            color:${darkCol};text-align:center;margin-bottom:4px;
+            white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name}</div>
+          <div style="flex:1;font-size:9px;color:#2a1e0e;text-align:center;
+            line-height:1.35">${s.desc || ''}</div>
+          ${castable ? `<div style="font-family:Cinzel,serif;font-size:8px;
+            color:${darkCol};text-align:center;margin-top:4px;
+            border-top:1px solid ${col}44;padding-top:3px;font-weight:600">▶ Cast</div>` : ''}
+        </div>
       </div>
     `;
   }).join('');

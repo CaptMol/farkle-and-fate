@@ -664,12 +664,10 @@ class Game {
 
     renderHUD(this.player, this.enemy, phase);
 
-    // MTG-style spell card bar — only shown during player's turn
-    if (this.fsm?.isPlayerTurn) {
-      renderSpellCardBar(this.player, phase);
-    } else {
-      renderSpellCardBar(null, phase);
-    }
+    // MTG-style spell card bar — shown during player's turn and instant windows
+    const INSTANT_PHASES = ['INSTANT_W1','INSTANT_W2','INSTANT_FARKLE','INSTANT_VICTORY'];
+    const showSpellBar = this.fsm?.isPlayerTurn || INSTANT_PHASES.includes(phase);
+    renderSpellCardBar(showSpellBar ? this.player : null, phase);
 
     const pz = document.getElementById('pz');
     const ez = document.getElementById('ez');
