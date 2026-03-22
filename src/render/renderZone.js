@@ -213,12 +213,19 @@ function renderComboBanner(turnState, domIds, options) {
     const btn = document.createElement('div');
     const isSelected = turnState.activeComboChoice === combo.type;
 
+    const selBorder = 'var(--gold2)';
+    const defBorder = 'rgba(168,68,238,.55)';
+    const selShadow = '0 0 10px rgba(240,184,74,.3)';
+    const selShadowHover = '0 0 16px rgba(240,184,74,.55)';
+    const defShadowHover = '0 0 14px rgba(168,68,238,.6)';
+
     btn.style.cssText = `
       font-family:Cinzel,serif;font-size:10px;letter-spacing:1px;
       padding:4px 12px;border-radius:4px;cursor:${isHuman ? 'pointer' : 'default'};
-      border:1px solid ${isSelected ? 'var(--gold2)' : 'var(--border2)'};
-      color:${isSelected ? 'var(--gold2)' : 'var(--text-muted)'};
-      background:${isSelected ? 'rgba(240,184,74,.1)' : 'transparent'};
+      border:1px solid ${isSelected ? selBorder : defBorder};
+      color:${isSelected ? 'var(--gold2)' : 'var(--text)'};
+      background:${isSelected ? 'rgba(240,184,74,.1)' : 'rgba(168,68,238,.08)'};
+      box-shadow:${isSelected ? selShadow : 'none'};
       transition:all .1s;
     `;
 
@@ -227,15 +234,17 @@ function renderComboBanner(turnState, domIds, options) {
 
     if (isHuman) {
       btn.onclick = () => window._game?.clickCombo(combo);
-
-      // Hover highlight
       btn.onmouseenter = () => {
+        btn.style.boxShadow = isSelected ? selShadowHover : defShadowHover;
+        btn.style.borderColor = isSelected ? selBorder : 'var(--epic)';
         combo.diceUids.forEach(uid => {
           const el = document.querySelector(`[data-uid="${uid}"]`);
           if (el) el.classList.add('combo-hover');
         });
       };
       btn.onmouseleave = () => {
+        btn.style.boxShadow = isSelected ? selShadow : 'none';
+        btn.style.borderColor = isSelected ? selBorder : defBorder;
         document.querySelectorAll('.combo-hover').forEach(el => el.classList.remove('combo-hover'));
       };
     }

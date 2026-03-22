@@ -87,7 +87,7 @@
   box-shadow: 0 0 14px rgba(168,68,238,.4), 2px 2px 0 rgba(0,0,0,.7);
 }
 .die.combo-hit:hover { transform: translateY(-3px) scale(1.06); }
-.die.combo-hover { box-shadow: 0 0 18px rgba(168,68,238,.6) !important; }
+.die.combo-hover { box-shadow: 0 0 28px rgba(168,68,238,.95), 0 0 48px rgba(168,68,238,.4), 2px 2px 0 rgba(0,0,0,.7) !important; transform: translateY(-2px) scale(1.05); }
 .die.rolling {
   animation: roll-spin 0.52s ease-out;
   opacity: .7;
