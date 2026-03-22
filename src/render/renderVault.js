@@ -73,6 +73,16 @@ function renderPlayerHeader(playerState, nameEl, titleEl, isHuman) {
 
   const titleDiv = document.getElementById(titleEl);
   if (titleDiv) titleDiv.textContent = playerState.avatar?.title || '';
+
+  // Win streak badge
+  const streakId = nameEl.replace('name-lbl', 'streak-badge');
+  const streakEl = document.getElementById(streakId);
+  if (streakEl) {
+    const s = playerState.winStreak || 0;
+    streakEl.innerHTML = s >= 1
+      ? `<span style="font-size:9px;color:var(--legendary);opacity:.9">🔥 ×${s}</span>`
+      : '';
+  }
 }
 
 // ── Gold ──────────────────────────────────────────────────────────────────
