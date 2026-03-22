@@ -205,28 +205,29 @@
 
 <!-- ── SHOP OVERLAY ──────────────────────────────────────────────── -->
 <div class="ov" id="shop-ov">
-  <div class="ov-box" style="max-width:720px">
-    <div style="text-align:center;font-family:Cinzel,serif;font-size:13px;
-      letter-spacing:3px;color:var(--gold2);margin-bottom:4px" id="shop-t">✦ Shop ✦</div>
-    <div style="font-family:Cinzel,serif;font-size:12px;color:var(--text-dim);
-      text-align:center;margin-bottom:6px;letter-spacing:1px" id="shop-player-name"></div>
+  <div class="ov-box" style="max-width:760px">
+    <div style="text-align:center;font-family:'Cinzel Decorative',serif;font-size:20px;
+      letter-spacing:4px;color:var(--gold2);margin-bottom:3px;
+      text-shadow:0 0 20px rgba(240,184,74,.4)" id="shop-t">✦ Shop ✦</div>
+    <div style="font-family:Cinzel,serif;font-size:13px;color:var(--text-dim);
+      text-align:center;margin-bottom:8px;letter-spacing:2px" id="shop-player-name"></div>
 
-    <div id="shop-info-bar" style="font-family:Cinzel,serif;font-size:10px;
+    <div id="shop-info-bar" style="font-family:Cinzel,serif;font-size:12px;
       letter-spacing:1px;color:var(--text-muted);text-align:center;
-      margin-bottom:8px;line-height:1.7;border-bottom:1px solid var(--border2);padding-bottom:8px"></div>
+      margin-bottom:10px;line-height:1.8;border-bottom:1px solid var(--border2);padding-bottom:10px"></div>
 
-    <div style="text-align:center;font-family:Cinzel,serif;font-size:10px;
-      letter-spacing:3px;color:var(--text-muted);margin-bottom:12px">— CHOOSE ONE —</div>
+    <div style="text-align:center;font-family:Cinzel,serif;font-size:11px;
+      letter-spacing:4px;color:var(--text-muted);margin-bottom:14px">— CHOOSE ONE —</div>
 
     <div id="shop-items" style="margin-bottom:16px"></div>
 
     <div style="display:flex;justify-content:space-between;align-items:center;
       border-top:1px solid var(--border2);padding-top:12px">
-      <span style="font-family:Cinzel,serif;font-size:12px;color:var(--gold2)">
+      <span style="font-family:Cinzel,serif;font-size:14px;color:var(--gold2)">
         Gold: <span id="shop-coins">0 🪙</span>
       </span>
       <button class="btn" id="shop-skip-btn" onclick="window._game?.skipShop()"
-        style="font-size:10px;padding:6px 16px">Skip →</button>
+        style="font-size:11px;padding:7px 18px">Skip →</button>
     </div>
   </div>
 </div>
@@ -311,9 +312,11 @@ window.showShopUI = function(offers, player, isEnemy, onClose) {
 
     // Column headline
     const colHead = document.createElement('div');
-    colHead.style.cssText = `font-family:Cinzel,serif;font-size:10px;letter-spacing:2px;
-      text-transform:uppercase;color:var(--text-muted);text-align:center;
-      border-bottom:1px solid var(--border2);padding-bottom:6px`;
+    colHead.style.cssText = `font-family:Cinzel,serif;font-size:13px;letter-spacing:3px;
+      text-transform:uppercase;color:var(--gold);text-align:center;font-weight:700;
+      padding:8px 0 8px;margin-bottom:4px;
+      border-bottom:2px solid var(--border2);
+      text-shadow:0 0 10px rgba(212,149,42,.35)`;
     colHead.textContent = col.label;
     colEl.appendChild(colHead);
 
@@ -395,17 +398,27 @@ function buildShopCard(o, coins, isEnemy, idx) {
   card.className = `sc ${o.rarity}${o.type==='rune'?' sc-rune':''}${!can&&!isEnemy?' nc':''}`;
   if (isEnemy) { card.id = `e-shop-item-${idx}`; card.style.cssText='opacity:.55;cursor:default;transition:all .4s;'; }
 
+  const typeLabel = { dice:'Dice', rune:'Rune', enchantment:'Enchantment', sorcery:'Spell', instant:'Instant' }[o.type] || o.type;
   card.innerHTML = `
-    <div style="text-align:center;margin-bottom:8px">
-      <span style="font-family:Cinzel,serif;font-size:14px;font-weight:bold;color:${rc[o.rarity]};letter-spacing:1px;text-transform:uppercase">${o.rarity}</span>
-      ${o.type!=='rune'?`<span style="color:var(--text-muted);font-size:10px;margin-left:4px">· ${o.name}</span>`:''}
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <span style="font-family:Cinzel,serif;font-size:10px;letter-spacing:1px;
+        text-transform:uppercase;color:var(--text-muted);
+        border:1px solid var(--border2);border-radius:3px;padding:1px 6px">${typeLabel}</span>
+      <span style="font-family:Cinzel,serif;font-size:11px;font-weight:700;
+        color:${rc[o.rarity]};letter-spacing:1px;text-transform:uppercase;
+        text-shadow:0 0 8px ${rc[o.rarity]}55">${o.rarity}</span>
     </div>
-    <div style="font-size:22px;text-align:center;margin:6px 0">${o.icon||'?'}</div>
-    <div style="font-family:Cinzel,serif;font-size:11px;font-weight:bold;
-      color:${rc[o.rarity]};text-align:center;margin-bottom:4px">${o.name}</div>
-    <div style="font-size:11px;color:var(--text-muted);text-align:center;margin-bottom:10px;min-height:32px">${o.desc||''}</div>
-    <div style="text-align:center;font-family:Cinzel,serif;font-size:14px;font-weight:bold;
-      color:${can?'var(--gold2)':'var(--text-muted)'}">${o.cost} 🪙</div>
+    <div style="font-size:30px;text-align:center;margin:4px 0 8px;
+      text-shadow:0 0 14px ${rc[o.rarity]}66">${o.icon||'?'}</div>
+    <div style="font-family:Cinzel,serif;font-size:13px;font-weight:700;
+      color:${rc[o.rarity]};text-align:center;margin-bottom:6px;
+      text-shadow:0 0 6px ${rc[o.rarity]}44">${o.name}</div>
+    <div style="font-size:12px;color:var(--text-dim);text-align:center;
+      margin-bottom:12px;min-height:34px;line-height:1.5">${o.desc||''}</div>
+    <div style="text-align:center;font-family:Cinzel,serif;font-size:16px;font-weight:700;
+      color:${can?'var(--gold2)':'var(--text-muted)'}">
+      ${can ? `<span style="text-shadow:0 0 10px rgba(240,184,74,.5)">${o.cost} 🪙</span>` : `<span style="opacity:.6">${o.cost} 🪙</span>`}
+    </div>
   `;
 
   if (!isEnemy) {
