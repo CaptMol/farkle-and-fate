@@ -14,7 +14,7 @@
 }
 .zone-lbl {
   font-family: 'Cinzel', serif;
-  font-size: 8px;
+  font-size: 9px;
   letter-spacing: 2px;
   text-transform: uppercase;
   position: absolute;
@@ -124,7 +124,7 @@
 }
 .seczone-lbl {
   font-family: 'Cinzel', serif;
-  font-size: 7px; letter-spacing: 2px;
+  font-size: 8px; letter-spacing: 2px;
   position: absolute; top: -8px; left: 8px;
   background: var(--field); padding: 0 6px;
   color: var(--gold-dim);
@@ -150,13 +150,13 @@
 }
 .sec-div-score {
   font-family: 'Cinzel', serif;
-  font-size: 8px; color: var(--gold); white-space: nowrap;
+  font-size: 9px; color: var(--gold); white-space: nowrap;
 }
 .rpts-w {
   display: flex; align-items: baseline; gap: 6px;
   margin-left: auto; padding: 0 4px;
 }
-.rpts-l { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 2px; color: var(--text-muted); }
+.rpts-l { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 2px; color: var(--text-muted); }
 .rpts-v { font-family: 'Cinzel', serif; font-size: 20px; font-weight: 700; color: var(--green2); }
 
 /* ── Combo Banner ── */
@@ -174,7 +174,7 @@
   border: 3px solid var(--border2);
   border-radius: 4px;
   font-family: 'Cinzel', serif;
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 2px;
   text-transform: uppercase;
   cursor: pointer;
@@ -316,17 +316,17 @@
   justify-content: space-between;
   margin-bottom: 3px;
   font-family: Cinzel, serif;
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 1px;
 }
 
 /* ── Log ── */
-#glog { font-size: 10px; line-height: 1.6; }
+#glog { font-size: 11px; line-height: 1.6; }
 .le.hi    { color: var(--gold);  }
 .le.bad   { color: var(--red2);  }
 .le.mag   { color: var(--epic);  }
 .le.fire  { color: #ff8800;      }
-.le.ei    { color: var(--red2);  font-style: italic; font-size: 9px; }
+.le.ei    { color: var(--red2);  font-style: italic; font-size: 10px; }
 .le
 
 /* ── Score Float ── */
@@ -370,7 +370,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text-muted);
   font-style: italic;
   padding: 16px 0 24px;

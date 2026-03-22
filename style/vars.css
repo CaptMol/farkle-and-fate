@@ -31,7 +31,7 @@
   /* ── Text ── */
   --text:      #ede0c4;
   --text-dim:  #a08860;
-  --text-muted:#604832;
+  --text-muted:#806040;
 
   /* ── Rarity ── */
   --common:    #9a9a8a;
@@ -130,13 +130,13 @@ body  {
   text-transform: uppercase;
 }
 .game-sub {
-  font-size: 9px;
+  font-size: 10px;
   color: var(--text-muted);
   letter-spacing: 4px;
   margin-top: 3px;
   font-family: 'Cinzel', serif;
   text-transform: uppercase;
-  opacity: .7;
+  opacity: .85;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -191,7 +191,7 @@ body  {
 }
 .vault-name {
   font-family: 'Cinzel', serif;
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--gold);
@@ -210,7 +210,7 @@ body  {
 }
 .vault-list-head {
   font-family: 'Cinzel', serif;
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 3px;
   text-transform: uppercase;
   color: var(--text-muted);
