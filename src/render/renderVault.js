@@ -120,7 +120,7 @@ function renderDiceList(playerState, dcollId, isHuman) {
         <div style="margin-top:2px">${slotDots}${runePreview}</div>
       </div>
       ${inPlay
-        ? `<span style="font-size:9px;color:var(--green2)">▶</span>`
+        ? `<span style="font-size:9px;color:var(--green2)">●</span>`
         : `<span style="font-size:9px;color:var(--text-muted)">○</span>`}
     `;
     cont.appendChild(card);
