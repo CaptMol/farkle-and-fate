@@ -3,6 +3,14 @@
  * Auto-extracted from bundle. Edit this file.
  */
 
+// Stable sort order cache: playerId → uid[]
+// Preserves visual position during vault interaction; reset per turn.
+const _stableOrder = new Map();
+
+export function invalidateVaultOrder(playerId) {
+  _stableOrder.delete(playerId);
+}
+
 /**
  * render/renderVault.js
  * ONE function for both player and enemy vaults.
@@ -89,13 +97,26 @@ function renderDiceList(playerState, dcollId, isHuman) {
   cont.innerHTML = '';
 
   const ro = { legendary:0, epic:1, rare:2, common:3, godlike:-1 };
-  const sorted = [...playerState.ownedDice].sort((a, b) => {
-    const rd = (ro[a.rarity] ?? 3) - (ro[b.rarity] ?? 3);
-    if (rd !== 0) return rd;
-    const aIn = playerState.deckUids.includes(a.uid) ? 0 : 1;
-    const bIn = playerState.deckUids.includes(b.uid) ? 0 : 1;
-    return aIn - bIn;
-  });
+  const pid = playerState.id;
+  const currentUids = new Set(playerState.ownedDice.map(d => d.uid));
+
+  // Rebuild stable order if inventory changed (new purchase) or no cache yet
+  const cached = _stableOrder.get(pid);
+  const cacheValid = cached && cached.every(uid => currentUids.has(uid)) && cached.length === currentUids.size;
+  if (!cacheValid) {
+    const freshSorted = [...playerState.ownedDice].sort((a, b) => {
+      const rd = (ro[a.rarity] ?? 3) - (ro[b.rarity] ?? 3);
+      if (rd !== 0) return rd;
+      const aIn = playerState.deckUids.includes(a.uid) ? 0 : 1;
+      const bIn = playerState.deckUids.includes(b.uid) ? 0 : 1;
+      return aIn - bIn;
+    });
+    _stableOrder.set(pid, freshSorted.map(d => d.uid));
+  }
+
+  const uidOrder = _stableOrder.get(pid);
+  const dieByUid = new Map(playerState.ownedDice.map(d => [d.uid, d]));
+  const sorted = uidOrder.map(uid => dieByUid.get(uid)).filter(Boolean);
 
   const rc = {
     common:'var(--common)', rare:'var(--rare)',

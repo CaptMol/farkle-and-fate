@@ -11,7 +11,7 @@ import { castSpell, useShieldCharge, hasShield, consumeFumble, consumeExtraDie }
 import { greedyTurn } from './ai.js';
 import { getScorableUids } from './scoring.js';
 import { renderZone } from './render/renderZone.js';
-import { renderVault } from './render/renderVault.js';
+import { renderVault, invalidateVaultOrder } from './render/renderVault.js';
 import { renderHUD } from './render/renderHUD.js';
 import { ENEMIES, NEXT_ROUND_CHALLENGES, GOLD_CONFIG } from './constants.js';
 import { SFX } from './audio.js';
@@ -140,6 +140,9 @@ class Game {
     }
 
     SFX.roll();
+
+    // Invalidate vault sort cache so list re-sorts after roll (not during vault interaction)
+    invalidateVaultOrder(active.id);
 
     // Archive current picks if any (completing a sub-roll before re-rolling)
     let newTurn = turn.picked.length > 0
