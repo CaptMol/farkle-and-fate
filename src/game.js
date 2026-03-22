@@ -13,7 +13,7 @@ import { getScorableUids } from './scoring.js';
 import { renderZone } from './render/renderZone.js';
 import { renderVault, invalidateVaultOrder, renderSpellCardBar } from './render/renderVault.js';
 import { renderHUD } from './render/renderHUD.js';
-import { ENEMIES, NEXT_ROUND_CHALLENGES, GOLD_CONFIG } from './constants.js';
+import { ENEMIES, NEXT_ROUND_CHALLENGES, GOLD_CONFIG, ENEMY_TIERS } from './constants.js';
 import { SFX } from './audio.js';
 import { spawnParticles, spawnCoinParticles, showFloat } from './particles.js';
 
@@ -595,7 +595,11 @@ class Game {
     if (winnerIsPlayer) this.player.winStreak++;
     else { this.player.winStreak = 0; }
 
-    this.enemy.name = pickEnemyName();
+    // Scale enemy difficulty based on player's win streak
+    this.enemy.tier = Math.min(3, Math.floor(this.player.winStreak / 3));
+    const tierData = ENEMY_TIERS[this.enemy.tier];
+    this.enemy.coins += tierData.bonusCoins;
+    this.enemy.name = pickEnemyName(this.enemy.tier);
 
     this.playerTurn = TurnState.fresh();
     this.enemyTurn  = TurnState.fresh();
@@ -731,8 +735,12 @@ function loadName() {
   return localStorage.getItem('ff-player-name') || 'Player';
 }
 
-function pickEnemyName() {
-  return ENEMIES[Math.floor(Math.random() * ENEMIES.length)].name;
+function pickEnemyName(tier = 0) {
+  // Higher-tier enemies from ENEMIES list (tier 1→easy, 2→medium, 3→hard)
+  const enemyTier = Math.max(1, Math.min(3, tier + 1));
+  const candidates = ENEMIES.filter(e => e.tier === enemyTier);
+  const pool = candidates.length ? candidates : ENEMIES;
+  return pool[Math.floor(Math.random() * pool.length)].name;
 }
 
 function log(type, msg) {

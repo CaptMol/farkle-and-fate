@@ -125,6 +125,50 @@ export const RARITY_WEIGHTS = {
   godlike:    4,
 };
 
+// ── Enemy Difficulty Tiers ────────────────────────────────────────────────
+// Set on enemy.tier = Math.min(3, Math.floor(player.winStreak / 3))
+// Controls AI risk thresholds in greedyRollDecide.
+// Higher tier = more aggressive rolling, higher bank thresholds, bonus starting coins.
+
+export const ENEMY_TIERS = [
+  {
+    label: 'Novice',
+    riskCap1Die: 0.67, bankScore1Die: 100,  // 1 remaining die
+    riskCap2:    0.44, bankScore2:    300,   // 2 dice
+    riskCap3:    0.28, bankScore3:    500,   // 3 dice
+    riskCap4:    0.18, bankScore4:    800,   // 4 dice
+    desperationGap: 5000, desperationScore: 500,
+    defaultBank: 600, bonusCoins: 0,
+  },
+  {
+    label: 'Veteran',
+    riskCap1Die: 0.72, bankScore1Die: 80,
+    riskCap2:    0.50, bankScore2:    200,
+    riskCap3:    0.33, bankScore3:    350,
+    riskCap4:    0.22, bankScore4:    650,
+    desperationGap: 6000, desperationScore: 600,
+    defaultBank: 500, bonusCoins: 30,
+  },
+  {
+    label: 'Champion',
+    riskCap1Die: 0.78, bankScore1Die: 50,
+    riskCap2:    0.56, bankScore2:    150,
+    riskCap3:    0.38, bankScore3:    250,
+    riskCap4:    0.26, bankScore4:    500,
+    desperationGap: 7000, desperationScore: 700,
+    defaultBank: 400, bonusCoins: 60,
+  },
+  {
+    label: 'Warlord',
+    riskCap1Die: 0.85, bankScore1Die: 0,
+    riskCap2:    0.62, bankScore2:    100,
+    riskCap3:    0.45, bankScore3:    200,
+    riskCap4:    0.32, bankScore4:    400,
+    desperationGap: 9000, desperationScore: 1000,
+    defaultBank: 300, bonusCoins: 100,
+  },
+];
+
 // ── Next Round Challenge Options ──────────────────────────────────────────
 // Extensible array — add new challenges here without changing game logic
 

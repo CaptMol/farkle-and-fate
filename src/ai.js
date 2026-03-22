@@ -7,6 +7,7 @@ import { findAllCombos, getScorableUids, calcScore } from './scoring.js';
 import { scoringProbability } from './dice.js';
 import { greedyInstantDecide } from './spells.js';
 import { greedyShopDecide } from './shop.js';
+import { ENEMY_TIERS } from './constants.js';
 
 /**
  * ai.js — Greedy AI
@@ -88,22 +89,21 @@ export function greedyRollDecide(turnState, player) {
   // Nothing picked yet — must pick before deciding
   if (!turnState.hasPickedAnything) return 'pick';
 
-  // Calculate farkle risk on remaining dice
+  // Tier-based risk thresholds — higher tier = more aggressive
+  const tier = ENEMY_TIERS[Math.min(player.tier || 0, ENEMY_TIERS.length - 1)];
   const farkleRisk = calcFarkleProbability(remaining);
 
-  // Risk thresholds — conservative AI
-  if (remaining.length <= 1 && currentScore >= 100) return 'bank';
-  if (farkleRisk >= 0.67) return 'bank'; // 1 die: ~67% farkle
-  if (farkleRisk >= 0.44 && currentScore >= 300) return 'bank'; // 2 dice
-  if (farkleRisk >= 0.28 && currentScore >= 500) return 'bank'; // 3 dice
-  if (farkleRisk >= 0.18 && currentScore >= 800) return 'bank'; // 4 dice
+  if (remaining.length <= 1 && currentScore >= tier.bankScore1Die) return 'bank';
+  if (farkleRisk >= tier.riskCap1Die) return 'bank';
+  if (farkleRisk >= tier.riskCap2 && currentScore >= tier.bankScore2) return 'bank';
+  if (farkleRisk >= tier.riskCap3 && currentScore >= tier.bankScore3) return 'bank';
+  if (farkleRisk >= tier.riskCap4 && currentScore >= tier.bankScore4) return 'bank';
 
-  // Far from win — take risks
+  // Far from win — keep rolling
   const toWin = player.target - player.total;
-  if (toWin > 5000 && currentScore < 500) return 'roll'; // need points badly
+  if (toWin > tier.desperationGap && currentScore < tier.desperationScore) return 'roll';
 
-  // Default: roll if score is low
-  return currentScore >= 600 ? 'bank' : 'roll';
+  return currentScore >= tier.defaultBank ? 'bank' : 'roll';
 }
 
 // ── Full Turn ─────────────────────────────────────────────────────────────
