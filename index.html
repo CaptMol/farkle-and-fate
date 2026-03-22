@@ -384,7 +384,12 @@ if (saved) {
 window._shopCallback = null;
 
 window.showShopUI = function(offers, player, isEnemy, onClose) {
-  window._shopCallback = onClose;
+  // Wrap onClose so any caller (card click, skip) always closes the overlay first
+  window._shopCallback = function() {
+    document.getElementById('shop-ov').classList.remove('active');
+    window._shopCallback = null;
+    onClose();
+  };
   const cont = document.getElementById('shop-items');
   cont.innerHTML = '';
 
@@ -461,14 +466,6 @@ window.showShopUI = function(offers, player, isEnemy, onClose) {
   if (skipBtn) skipBtn.style.display = isEnemy ? 'none' : '';
 
   document.getElementById('shop-ov').classList.add('active');
-
-  // Enemy shop: auto-close after AI "decision" time
-  if (isEnemy) {
-    setTimeout(() => {
-      document.getElementById('shop-ov').classList.remove('active');
-      if (window._shopCallback) { const cb = window._shopCallback; window._shopCallback = null; cb(); }
-    }, 2200);
-  }
 };
 
 window.closeShopUI = function() {
