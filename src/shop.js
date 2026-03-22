@@ -87,7 +87,8 @@ export function buildOffer(player) {
 function isAvailable(item, player) {
   if (item.type === 'dice') {
     const owned = (player.ownedDice||[]).filter(d => d.templateId === item.tpl).length;
-    return owned < 3; // max 3 of same die type
+    const max = item.rarity === 'godlike' ? 1 : 3;
+    return owned < max;
   }
   // Always available
   return true;
