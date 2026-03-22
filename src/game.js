@@ -477,28 +477,20 @@ class Game {
   }
 
   _continueToEnemyShop(enemy) {
-    if (enemy.shop.hasPending) {
+    // Enemy shop is fully silent — never touches the UI overlay.
+    // Process all pending shop windows in one synchronous pass.
+    while (enemy.shop.hasPending) {
       enemy.shop.openNext();
       const offers = buildOffer(enemy);
       enemy._currentShopOffers = offers;
-      (window.showShopUI||((o,p,e,cb)=>setTimeout(cb,500)))(offers, enemy, true, () => {
-        const decision = greedyTurn(PHASES.SHOP, null, enemy, this.player);
-        if (decision.action === 'buy') {
-          const result = buy(decision.item, enemy, mkDie);
-          if (result.success) log('ei', `${enemy.name} buys: ${decision.item.name}`);
-        }
-        enemy.shop.close();
-        if (enemy.shop.hasPending) {
-          this._continueToEnemyShop(enemy);
-        } else {
-          (window.closeShopUI||(() => {}))();
-          this.fsm.afterShop();
-        }
-      });
-    } else {
-      closeShopUI();
-      this.fsm.afterShop();
+      const decision = greedyTurn(PHASES.SHOP, null, enemy, this.player);
+      if (decision.action === 'buy') {
+        const result = buy(decision.item, enemy, mkDie);
+        if (result.success) log('ei', `${enemy.name} buys: ${decision.item.name}`);
+      }
+      enemy.shop.close();
     }
+    this.fsm.afterShop();
   }
 
   buyItem(item) {
