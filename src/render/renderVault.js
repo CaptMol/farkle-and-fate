@@ -286,7 +286,7 @@ function renderRuneBar(playerState, runeBarId) {
   `;
 }
 
-// ── Spells (clickable for human, display-only for enemy) ──────────────────
+// ── Spells (compact summary in vault panel) ────────────────────────────────
 
 function renderSpells(playerState, spellListId, isHuman) {
   const bar = document.getElementById(spellListId);
@@ -302,22 +302,19 @@ function renderSpells(playerState, spellListId, isHuman) {
   const catCol = { attack:'var(--red2)', defense:'var(--rare)', utility:'var(--epic)' };
 
   if (isHuman) {
-    // Human: show full spell cards, clickable
-    bar.innerHTML = spells.map((s, i) => {
+    // Human: compact list (full cards shown in bottom bar)
+    bar.innerHTML = spells.map(s => {
       const col = catCol[s.category] || 'var(--text-muted)';
       return `
-        <div onclick="window._game?.castSpell('${s.instanceId}')"
-          style="display:flex;align-items:center;gap:6px;padding:5px 7px;margin-bottom:3px;
-          border-radius:3px;cursor:pointer;border:1px solid ${col}55;background:${col}11;
-          transition:all .12s"
-          onmouseenter="this.style.background='${col}22'"
-          onmouseleave="this.style.background='${col}11'">
-          <span style="font-size:14px">${s.icon || '⚔'}</span>
-          <div style="flex:1">
-            <div style="font-family:Cinzel,serif;font-size:11px;font-weight:bold;color:${col}">${s.name}</div>
-            <div style="font-size:10px;color:var(--text-muted)">${s.desc || ''}</div>
+        <div style="display:flex;align-items:center;gap:6px;padding:4px 6px;margin-bottom:3px;
+          border-radius:3px;border:1px solid ${col}44;background:${col}0d">
+          <span style="font-size:13px">${s.icon || '⚔'}</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-family:Cinzel,serif;font-size:10px;color:${col};
+              white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name}</div>
           </div>
-          <span style="font-size:9px;color:${col};font-family:Cinzel,serif">${(s.category || '').toUpperCase()}</span>
+          <span style="font-size:8px;color:${col};opacity:.7;font-family:Cinzel,serif;
+            letter-spacing:1px">${(s.timing || '').toUpperCase()}</span>
         </div>`;
     }).join('');
   } else {
@@ -327,4 +324,77 @@ function renderSpells(playerState, spellListId, isHuman) {
         ⚔ ${spells.length} spell${spells.length !== 1 ? 's' : ''} — hidden
       </div>`;
   }
+}
+
+// ── Spell Card Bar (MTG-style, fixed bottom) ──────────────────────────────
+
+export function renderSpellCardBar(playerState, phase) {
+  const bar = document.getElementById('spell-card-bar');
+  if (!bar) return;
+
+  const spells = playerState?.spells || [];
+  const canCast = phase === 'PICK';
+
+  if (!spells.length) {
+    bar.style.display = 'none';
+    return;
+  }
+
+  bar.style.display = 'flex';
+  bar.style.pointerEvents = 'auto';
+
+  const catCol = { attack:'var(--red2)', defense:'var(--rare)', utility:'var(--epic)' };
+
+  bar.innerHTML = spells.map(s => {
+    const col = catCol[s.category] || 'var(--text-muted)';
+    const timingLabel = s.timing === 'instant' ? '⚡ Instant' : '✦ Sorcery';
+    const castable = canCast && s.timing !== 'instant';
+    const opacity = castable ? '1' : '0.5';
+    const cursor = castable ? 'pointer' : 'default';
+
+    return `
+      <div
+        data-spell-id="${s.instanceId}"
+        style="
+          width:82px;min-height:116px;
+          border:2px solid ${col};border-radius:8px;
+          background:linear-gradient(180deg,var(--panel2) 0%,var(--panel) 100%);
+          box-shadow:0 0 10px ${col}44,3px 3px 0 rgba(0,0,0,.8);
+          display:flex;flex-direction:column;
+          cursor:${cursor};pointer-events:auto;
+          opacity:${opacity};
+          transition:transform .12s,box-shadow .12s,opacity .2s;
+          position:relative;overflow:hidden;
+          flex-shrink:0;
+        "
+        onmouseenter="if(${castable}){this.style.transform='translateY(-12px) scale(1.05)';this.style.boxShadow='0 0 20px ${col}88,3px 3px 0 rgba(0,0,0,.8)'}"
+        onmouseleave="this.style.transform='';this.style.boxShadow='0 0 10px ${col}44,3px 3px 0 rgba(0,0,0,.8)'"
+        onclick="${castable ? `window._game?.castSpell('${s.instanceId}')` : ''}"
+      >
+        <!-- Color bar top -->
+        <div style="height:4px;background:${col};box-shadow:0 0 8px ${col}"></div>
+        <!-- Category badge -->
+        <div style="font-family:Cinzel,serif;font-size:7px;letter-spacing:1px;
+          color:${col};text-align:center;padding:3px 0;text-transform:uppercase;
+          border-bottom:1px solid ${col}33">${timingLabel}</div>
+        <!-- Icon -->
+        <div style="font-size:26px;text-align:center;padding:6px 0 4px;
+          text-shadow:0 0 12px ${col}66">${s.icon || '⚔'}</div>
+        <!-- Name -->
+        <div style="font-family:Cinzel,serif;font-size:9px;font-weight:700;
+          color:${col};text-align:center;padding:0 5px 4px;
+          white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+          text-shadow:0 0 6px ${col}44">${s.name}</div>
+        <!-- Desc -->
+        <div style="font-size:8px;color:var(--text-dim);text-align:center;
+          padding:0 5px 6px;line-height:1.35;flex:1">${s.desc || ''}</div>
+        <!-- Uncastable overlay -->
+        ${!castable ? `<div style="position:absolute;inset:0;background:rgba(0,0,0,.35);border-radius:6px;
+          display:flex;align-items:center;justify-content:center;font-size:8px;
+          color:var(--text-muted);font-family:Cinzel,serif;text-align:center;padding:4px">
+          ${s.timing === 'instant' ? 'Instant — auto' : 'Cast on your turn'}
+        </div>` : ''}
+      </div>
+    `;
+  }).join('');
 }

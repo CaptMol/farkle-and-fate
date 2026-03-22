@@ -11,7 +11,7 @@ import { castSpell, useShieldCharge, hasShield, consumeFumble, consumeExtraDie }
 import { greedyTurn } from './ai.js';
 import { getScorableUids } from './scoring.js';
 import { renderZone } from './render/renderZone.js';
-import { renderVault, invalidateVaultOrder } from './render/renderVault.js';
+import { renderVault, invalidateVaultOrder, renderSpellCardBar } from './render/renderVault.js';
 import { renderHUD } from './render/renderHUD.js';
 import { ENEMIES, NEXT_ROUND_CHALLENGES, GOLD_CONFIG } from './constants.js';
 import { SFX } from './audio.js';
@@ -671,6 +671,13 @@ class Game {
     }, { isHuman: false });
 
     renderHUD(this.player, this.enemy, phase);
+
+    // MTG-style spell card bar — only shown during player's turn
+    if (this.fsm?.isPlayerTurn) {
+      renderSpellCardBar(this.player, phase);
+    } else {
+      renderSpellCardBar(null, phase);
+    }
 
     const pz = document.getElementById('pz');
     const ez = document.getElementById('ez');
