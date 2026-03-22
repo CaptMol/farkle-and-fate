@@ -161,7 +161,7 @@ body  {
 .layout {
   display: grid;
   grid-template-columns: 240px 1fr 240px;
-  grid-template-rows: 1fr auto;
+  grid-template-rows: 1fr;
   height: calc(100vh - 120px);
   gap: 0;
 }
@@ -232,18 +232,6 @@ body  {
     linear-gradient(180deg, #0e0c0a 0%, #0a0908 100%);
 }
 
-/* ── Chronicle (bottom strip) ── */
-.chronicle-bar {
-  grid-column: 1 / -1;
-  height: 100px;
-  border-top: 3px solid var(--border2);
-  padding: 6px 16px;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  background:
-    repeating-linear-gradient(90deg, transparent 0px, transparent 12px, rgba(0,0,0,.04) 12px, rgba(0,0,0,.04) 13px),
-    linear-gradient(180deg, #0a0808 0%, #080606 100%);
-}
 
 /* ── Mobile ── */
 @media (max-width: 900px) {
