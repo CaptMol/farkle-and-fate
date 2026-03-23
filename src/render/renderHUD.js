@@ -25,7 +25,7 @@ export function renderHUD(player, enemy, phase, isPlayerTurn = false) {
   renderRoundInfo(player);
 }
 
-const SHOP_INTERVAL = 2500;
+const SHOP_INTERVAL = 1000;
 const TICK_INTERVAL = 1000;
 
 function renderProgressBars(player, enemy) {

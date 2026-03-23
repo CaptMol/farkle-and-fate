@@ -123,9 +123,10 @@ Skins override CSS custom properties only.
 - Loser always receives +50 gold consolation
 
 ### Shop
-- Triggers every 2.500 points
+- Triggers every 1.000 points
 - Milestones reset each new round
-- Progress bar shows tick marks at each 2.500 interval
+- Exactly 2 items per visit, from 2 randomly chosen categories (dice / rune / enchantment / spell)
+- Progress bar shows tick marks at each 1.000 interval
 - "Next shop: X pts" label updates live
 
 ### Curse Spells (flat additive)

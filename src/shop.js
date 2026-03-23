@@ -24,7 +24,7 @@ export class ShopState {
   /** Check if new shop windows triggered after banking score */
   checkMilestones(newTotal) {
     const newShops = [];
-    for (let t = 2500; t <= newTotal; t += 2500) {
+    for (let t = 1000; t <= newTotal; t += 1000) {
       if (!this.milestones.has(t)) {
         this.milestones.add(t);
         this.queue.push({ triggeredAt: t });
@@ -63,25 +63,24 @@ export class ShopState {
 // ── Offer Generation ──────────────────────────────────────────────────────
 
 /**
- * Generate shop offer — structured as 2 columns:
- *   Left:  Die + Rune
- *   Right: Enchantment + Spell
- *
- * Each slot: one randomly weighted item from its category, or null.
- * This structure is the source of truth for the shop layout.
+ * Generate shop offer — exactly 2 items from 2 randomly chosen categories.
+ * Categories: dice, rune, enchantment, spell (sorcery/instant both count as 'spell').
+ * Two categories are chosen randomly each visit; one item per category.
  */
 export function buildOffer(player) {
-  function pickOne(type) {
+  const ALL_CATEGORIES = ['dice', 'rune', 'enchantment', 'spell'];
+
+  // Shuffle and take first 2
+  const shuffled = [...ALL_CATEGORIES].sort(() => Math.random() - 0.5);
+  const chosen = shuffled.slice(0, 2);
+
+  const items = chosen.map(type => {
     const pool = SHOP_ITEMS.filter(i => i.type === type && isAvailable(i, player));
     if (!pool.length) return null;
     return weightedRandom(buildWeightedPool(pool));
-  }
-  return {
-    columns: [
-      { label: 'Die & Rune',      items: [pickOne('dice'), pickOne('rune')] },
-      { label: 'Enchant & Spell', items: [pickOne('enchantment'), pickOne('spell')] },
-    ]
-  };
+  });
+
+  return { items };
 }
 
 function isAvailable(item, player) {
@@ -149,10 +148,7 @@ export function buy(item, player, mkDieFn) {
 
 /** Greedy AI shop decision — picks best affordable item */
 export function greedyShopDecide(offer, player) {
-  // offer is { columns: [{label, items}, ...] } — extract all non-null items
-  const items = (offer?.columns || [])
-    .flatMap(col => col.items || [])
-    .filter(Boolean);
+  const items = (offer?.items || []).filter(Boolean);
 
   const affordable = items.filter(o => player.coins >= o.cost);
   if (!affordable.length) return null;

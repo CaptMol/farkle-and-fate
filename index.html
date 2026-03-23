@@ -343,42 +343,21 @@ window.showShopUI = function(offers, player, isEnemy, onClose) {
   const cont = document.getElementById('shop-items');
   cont.innerHTML = '';
 
-  // offers = { columns: [{label, items}, {label, items}] }
-  cont.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px';
+  // offers = { items: [item1, item2] } — exactly 2 items from 2 different categories
+  cont.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px';
 
-  (offers.columns || []).forEach((col, colIdx) => {
-    const colEl = document.createElement('div');
-    colEl.style.cssText = 'display:flex;flex-direction:column;gap:10px';
-
-    // Column headline
-    const colHead = document.createElement('div');
-    colHead.style.cssText = `font-family:var(--font-pixel);font-size:7px;letter-spacing:2px;
-      text-transform:uppercase;color:var(--gold);text-align:center;
-      padding:6px 0;margin-bottom:4px;border-bottom:1px solid var(--border);`;
-    colHead.textContent = col.label;
-    colEl.appendChild(colHead);
-
-    // 2 item slots per column
-    const itemsGrid = document.createElement('div');
-    itemsGrid.style.cssText = 'display:flex;flex-direction:column;gap:8px';
-
-    (col.items || [null, null]).forEach((o, idx) => {
-      const globalIdx = colIdx * 2 + idx;
-      if (o) {
-        itemsGrid.appendChild(buildShopCard(o, player.coins, isEnemy, globalIdx));
-      } else {
-        const ph = document.createElement('div');
-        ph.style.cssText = `border:2px dashed var(--border);border-radius:8px;padding:12px;
-          display:flex;flex-direction:column;align-items:center;justify-content:center;
-          opacity:.25;min-height:120px;gap:4px`;
-        ph.innerHTML = `<div style="font-size:20px">○</div>
-          <div style="font-size:9px;color:var(--text-muted)">None available</div>`;
-        itemsGrid.appendChild(ph);
-      }
-    });
-
-    colEl.appendChild(itemsGrid);
-    cont.appendChild(colEl);
+  (offers.items || [null, null]).forEach((o, idx) => {
+    if (o) {
+      cont.appendChild(buildShopCard(o, player.coins, isEnemy, idx));
+    } else {
+      const ph = document.createElement('div');
+      ph.style.cssText = `border:2px dashed var(--border);border-radius:4px;padding:12px;
+        display:flex;flex-direction:column;align-items:center;justify-content:center;
+        opacity:.25;min-height:120px;gap:4px`;
+      ph.innerHTML = `<div style="font-size:20px">○</div>
+        <div style="font-family:var(--font-pixel);font-size:7px;color:var(--text-dim)">None</div>`;
+      cont.appendChild(ph);
+    }
   });
 
   // Shop title
