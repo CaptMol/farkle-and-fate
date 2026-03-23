@@ -77,13 +77,13 @@ body  {
 /* ── Main Layout ── */
 .layout {
   display: grid;
-  grid-template-columns: 240px 1fr 240px;
+  grid-template-columns: 1fr;
   grid-template-rows: 1fr auto;
   height: calc(100vh - 120px);
   gap: 0;
 }
 .vault-panel {
-  display: flex;
+  display: none; /* hidden — replaced by Edit Dice overlay (#27) */
   flex-direction: column;
   overflow: hidden;
   border-right: 2px solid var(--border);
@@ -163,11 +163,10 @@ body  {
 }
 
 /* ── Mobile ── */
-@media (max-width: 900px) {
-  .layout { grid-template-columns: 200px 1fr 200px; }
-}
 @media (max-width: 600px) {
-  .layout { grid-template-columns: 1fr; }
-  .vault-panel { display: none; position: fixed; inset: 0; z-index: 100; overflow-y: auto; }
-  .vault-panel
+  .hdr         { padding: 10px 16px 8px; }
+  .game-title  { font-size: 18px; letter-spacing: 4px; }
+  .hdr-controls{ top: 6px; right: 8px; }
+  .sbar        { padding: 5px 10px; }
+  .layout      { height: calc(100vh - 96px); }
 }
