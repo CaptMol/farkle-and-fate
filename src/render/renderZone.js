@@ -34,7 +34,7 @@ export function renderZone(playerState, turnState, domIds, options = {}) {
   const { isActive, isHuman, phase } = options;
 
   renderDiceField(turnState, domIds, { isActive, isHuman, phase, playerState });
-  renderSecuredZone(turnState, domIds, playerState.enchants.perPick);
+  renderSecuredZone(turnState, domIds, playerState.enchants.perPick, { phase, isActive, playerState });
   renderComboBanner(turnState, domIds, { isActive, isHuman, phase, playerState });
   renderTurnScore(turnState, domIds, playerState.enchants);
 }
@@ -124,7 +124,7 @@ function renderDiceField(turnState, domIds, options) {
 }
 // ── Secured Zone ──────────────────────────────────────────────────────────
 
-export function renderSecuredZone(turnState, domIds, perPickEnchants = {}) {
+export function renderSecuredZone(turnState, domIds, perPickEnchants = {}, options = {}) {
   const zone = document.getElementById(domIds.seczone);
   if (!zone) return;
 
@@ -136,7 +136,21 @@ export function renderSecuredZone(turnState, domIds, perPickEnchants = {}) {
   const hasArchived = turnState.archived.length > 0;
 
   if (!hasPicked && !hasArchived) {
-    if (empty) empty.style.display = '';
+    const { phase, isActive, playerState } = options;
+    // Resting state: show deck dice (dim) when it's this player's turn to roll
+    if (phase === 'ROLL' && isActive && playerState?.activeDeck?.length > 0) {
+      if (empty) empty.style.display = 'none';
+      playerState.activeDeck.forEach(die => {
+        const m = document.createElement('div');
+        m.className = 'dmini';
+        m.style.cssText = 'opacity:.2;cursor:default;border-style:dashed;border-color:rgba(200,170,80,.3);background:transparent';
+        m.textContent = '⚀';
+        m.title = die.name;
+        zone.appendChild(m);
+      });
+    } else {
+      if (empty) empty.style.display = '';
+    }
     return;
   }
   if (empty) empty.style.display = 'none';
