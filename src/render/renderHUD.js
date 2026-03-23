@@ -26,6 +26,7 @@ export function renderHUD(player, enemy, phase, isPlayerTurn = false) {
 }
 
 const SHOP_INTERVAL = 2500;
+const TICK_INTERVAL = 1000;
 
 function renderProgressBars(player, enemy) {
   const pPct = Math.min(100, (player.total / player.target) * 100);
@@ -36,9 +37,9 @@ function renderProgressBars(player, enemy) {
   if (pp) pp.style.width = pPct + '%';
   if (pe) pe.style.width = ePct + '%';
 
-  // Shop tick marks — small vertical lines at each 2500-pt milestone
-  addShopTicks('prog-player-outer', player.target, 'left');
-  addShopTicks('prog-enemy-outer',  enemy.target,  'right');
+  // Tick marks at 1000pt intervals
+  addProgTicks('prog-player-outer', player.target);
+  addProgTicks('prog-enemy-outer',  enemy.target);
 
   // Scores (skip if a count-up animation is already running on this element)
   const ps = document.getElementById('s-player-score');
@@ -50,9 +51,9 @@ function renderProgressBars(player, enemy) {
   const pt = document.getElementById('s-player-target');
   const et = document.getElementById('s-enemy-target');
   if (pt) pt.textContent = `/ ${player.target.toLocaleString()}`;
-  if (et) et.textContent = `${enemy.target.toLocaleString()} /`;
+  if (et) et.textContent = `/ ${enemy.target.toLocaleString()}`;
 
-  // "Next shop: X pts" label
+  // "Next shop" label (hidden element, kept for JS compatibility)
   const labelEl = document.getElementById('next-shop-label');
   if (labelEl) {
     const nextShop = (Math.floor(player.total / SHOP_INTERVAL) + 1) * SHOP_INTERVAL;
@@ -62,17 +63,16 @@ function renderProgressBars(player, enemy) {
   }
 }
 
-function addShopTicks(outerId, target, side) {
+function addProgTicks(outerId, target) {
   const outer = document.getElementById(outerId);
   if (!outer) return;
-  // Remove old ticks, keep the fill element
-  outer.querySelectorAll('.shop-tick').forEach(el => el.remove());
-  for (let ms = SHOP_INTERVAL; ms < target; ms += SHOP_INTERVAL) {
+  outer.querySelectorAll('.prog-tick').forEach(el => el.remove());
+  for (let ms = TICK_INTERVAL; ms < target; ms += TICK_INTERVAL) {
     const pct = (ms / target) * 100;
     const tick = document.createElement('div');
-    tick.className = 'shop-tick';
-    tick.style.cssText = `position:absolute;top:0;bottom:0;width:1px;
-      ${side}:${pct}%;background:rgba(255,200,100,.3);pointer-events:none`;
+    tick.className = 'prog-tick';
+    tick.style.cssText = `position:absolute;top:-1px;bottom:-1px;width:1px;
+      left:${pct}%;background:rgba(255,200,100,.25);pointer-events:none`;
     outer.appendChild(tick);
   }
 }

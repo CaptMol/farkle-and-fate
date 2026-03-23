@@ -441,13 +441,37 @@
   margin-top: 8px;
 }
 
-/* ── Progress bars (hidden in main layout, updated by JS) ── */
-.prog-wrap      { display: flex; align-items: center; }
-.prog-bar-outer { flex: 1; height: 8px; border-radius: 4px; background: var(--stone-dark); border: 1px solid var(--border); overflow: hidden; position: relative; }
-.prog-fill-player { height:100%; width:0%; background: linear-gradient(90deg, var(--green), var(--green)); border-radius:4px; transition: width .6s ease; float:left; }
-.prog-fill-enemy  { height:100%; width:0%; background: linear-gradient(270deg, var(--red), var(--red)); border-radius:4px; transition: width .6s ease; float:right; }
-.prog-divider   { width: 8px; flex-shrink: 0; }
-.prog-score-row { display:flex; justify-content:space-between; align-items:baseline; margin-top:2px; font-family: var(--font-pixel); }
-.prog-score-p   { font-size:12px; color:var(--green); display:flex; align-items:baseline; gap:4px; }
-.prog-score-e   { font-size:12px; color:var(--red);   display:flex; align-items:baseline; gap:4px; justify-content:flex-end; }
-.prog-label-row { display:flex; justify-content:space-between; margin-bottom:2px; font-family:var(--font-pixel); font-size:8px; }
+/* ── Progress bars ── */
+.prog-bar-outer {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--stone-dark);
+  border: 1px solid var(--border);
+  overflow: visible;
+  position: relative;
+}
+
+.prog-fill-player {
+  height: 100%;
+  width: 0%;
+  background: var(--green);
+  border-radius: 3px;
+  transition: width .6s ease;
+}
+
+.prog-fill-enemy {
+  height: 100%;
+  width: 0%;
+  background: var(--red);
+  border-radius: 3px;
+  transition: width .6s ease;
+}
+
+.prog-target {
+  font-family: var(--font-pixel);
+  font-size: 7px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  flex-shrink: 0;
+}

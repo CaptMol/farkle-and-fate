@@ -34,13 +34,21 @@
     </div>
   </header>
 
-  <!-- Row 2: Enemy header (44px) -->
+  <!-- Row 2: Enemy header (56px) -->
   <div class="player-bar enemy-bar" id="ez">
-    <span id="e-name-lbl" class="bar-name">Enemy</span>
-    <span id="s-enemy-score" class="bar-score">0</span>
-    <span id="e-gold-vault" class="bar-gold">50 🪙</span>
-    <span id="e-title-lbl" style="display:none"></span>
-    <span id="e-streak-badge" style="display:none"></span>
+    <div class="bar-info">
+      <span id="e-name-lbl" class="bar-name">Enemy</span>
+      <span id="s-enemy-score" class="bar-score">0</span>
+      <span id="e-gold-vault" class="bar-gold">50 🪙</span>
+      <span id="e-title-lbl" style="display:none"></span>
+      <span id="e-streak-badge" style="display:none"></span>
+    </div>
+    <div class="bar-prog">
+      <div id="prog-enemy-outer" class="prog-bar-outer">
+        <div id="prog-enemy" class="prog-fill-enemy" style="width:0%"></div>
+      </div>
+      <span id="s-enemy-target" class="prog-target">10,000</span>
+    </div>
   </div>
 
   <!-- Row 3: Enemy secured zone (32px) -->
@@ -68,9 +76,17 @@
     <div class="es sec-empty" id="p-sec-empty" style="color:var(--text-dim);font-size:9px;font-style:italic">Click scoring dice · roll again · or End Turn</div>
   </div>
 
-  <!-- Row 6: Player score bar (44px) -->
+  <!-- Row 6: Player score bar (56px) -->
   <div class="player-bar" id="pz">
-    <span id="s-player-score" class="bar-score">0</span>
+    <div class="bar-info">
+      <span id="s-player-score" class="bar-score">0</span>
+    </div>
+    <div class="bar-prog">
+      <div id="prog-player-outer" class="prog-bar-outer">
+        <div id="prog-player" class="prog-fill-player" style="width:0%"></div>
+      </div>
+      <span id="s-player-target" class="prog-target">/ 10,000</span>
+    </div>
   </div>
 
   <!-- Row 7: Buttons (64px) -->
@@ -98,10 +114,6 @@
 
   <!-- Hidden HUD elements — updated by renderHUD/renderZone -->
   <div style="display:none" aria-hidden="true">
-    <div id="prog-player-outer"><div id="prog-player" style="width:0%"></div></div>
-    <div id="prog-enemy-outer"><div id="prog-enemy" style="width:0%"></div></div>
-    <span id="s-player-target">/ 10,000</span>
-    <span id="s-enemy-target">10,000 /</span>
     <span id="tgt-line">GOAL: 10,000</span>
     <span id="next-shop-label"></span>
     <span id="hint-text"></span>

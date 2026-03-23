@@ -22,12 +22,12 @@ html, body {
   height: 100dvh;
   grid-template-rows:
     64px   /* header: title row + player-info row */
-    44px   /* enemy header: name, score, gold */
-    32px   /* enemy secured zone              */
-    1fr    /* shared dice field               */
-    32px   /* player secured zone             */
-    44px   /* player header: name, score, gold*/
-    64px;  /* buttons                         */
+    56px   /* enemy bar: info row + progress bar  */
+    32px   /* enemy secured zone                  */
+    1fr    /* shared dice field                   */
+    32px   /* player secured zone                 */
+    56px   /* player bar: score row + progress bar*/
+    64px;  /* buttons                             */
   text-align: center;
 }
 
@@ -60,16 +60,34 @@ html, body {
 .player-bar,
 .enemy-bar {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 0 12px;
+  gap: 2px;
+  padding: 4px 12px;
   border-bottom: 1px solid var(--border);
 }
 
 .enemy-bar {
   border-bottom: none;
   border-top: none;
+}
+
+.bar-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 520px;
+}
+
+.bar-prog {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  max-width: 520px;
 }
 
 /* ── Secured zones (face inward toward dice field) ── */
