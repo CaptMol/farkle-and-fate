@@ -73,45 +73,6 @@
 <!-- ── MAIN LAYOUT ───────────────────────────────────────────────── -->
 <div class="layout">
 
-  <!-- ── PLAYER VAULT (left) ── -->
-  <aside class="vault-panel" id="player-vault-panel">
-    <div class="vault-ph" style="gap:8px">
-      <!-- Avatar placeholder -->
-      <div id="p-avatar" style="
-        width:38px;height:38px;flex-shrink:0;
-        border:1px solid var(--gold-dim);border-radius:6px;
-        display:flex;align-items:center;justify-content:center;
-        background:rgba(212,149,42,.07);font-size:20px;
-        color:var(--gold-dim);
-      ">👤</div>
-      <!-- Name + title + streak -->
-      <div style="flex:1;min-width:0">
-        <div class="vault-name" id="p-name-lbl" title="Click to rename" style="cursor:pointer;color:var(--gold)">Player</div>
-        <div style="font-family:Cinzel,serif;font-size:9px;color:var(--text-muted);margin-top:1px;
-          display:flex;align-items:center;gap:5px">
-          <span id="p-title-lbl">The Wanderer</span>
-          <span id="p-streak-badge"></span>
-        </div>
-      </div>
-      <div class="vault-gold" id="p-gold-vault">50 🪙</div>
-    </div>
-    <div class="vault-body">
-      <div style="font-family:Cinzel,serif;font-size:10px;color:var(--text-muted);margin-bottom:4px">
-        <span id="deck-ct">0/6</span> in deck · click to toggle
-      </div>
-      <div id="dcoll"></div>
-
-      <div class="vault-list-head">🔮 RUNES</div>
-      <div id="rune-list-bar"></div>
-
-      <div class="vault-list-head">✦ ENCHANTMENTS</div>
-      <div id="ench-list-bar"></div>
-
-      <div class="vault-list-head">⚔ SPELLS</div>
-      <div id="spell-list-bar"></div>
-    </div>
-  </aside>
-
   <!-- ── CENTRAL FIELD ── -->
   <main class="central">
 
@@ -120,6 +81,36 @@
 
       <div class="zone ez inactive" id="ez">
         <div class="zone-lbl el" id="e-namelbl">Enemy</div>
+        <!-- Enemy info (moved from vault panel) -->
+        <div style="display:flex;justify-content:space-between;align-items:center;
+          margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--border)">
+          <div style="display:flex;align-items:center;gap:6px">
+            <div id="e-avatar" style="
+              width:24px;height:24px;flex-shrink:0;
+              border:1px solid rgba(180,60,40,.5);border-radius:4px;
+              display:flex;align-items:center;justify-content:center;
+              background:rgba(180,60,40,.07);font-size:13px;
+              color:rgba(180,60,40,.6);
+            ">💀</div>
+            <div>
+              <div id="e-name-lbl" style="font-family:Cinzel,serif;font-size:11px;
+                letter-spacing:1px;color:var(--red2)">Enemy</div>
+              <div style="font-family:Cinzel,serif;font-size:8px;color:var(--text-muted);
+                display:flex;align-items:center;gap:4px;margin-top:1px">
+                <span id="e-title-lbl"></span>
+                <span id="e-streak-badge"></span>
+              </div>
+            </div>
+          </div>
+          <div id="e-gold-vault" style="font-family:Cinzel,serif;font-size:11px;
+            color:var(--red2)">50 🪙</div>
+        </div>
+        <!-- Hidden elements kept for renderVault to update (enemy deck/items not shown) -->
+        <span id="e-deck-ct" style="display:none">0/6</span>
+        <div id="e-dcoll" style="display:none"></div>
+        <div id="e-rune-bar" style="display:none"></div>
+        <div id="e-ench-list" style="display:none"></div>
+        <div id="e-spell-list" style="display:none"></div>
         <div class="zscore-row">
           <span style="font-family:Cinzel,serif;font-size:9px;letter-spacing:2px;color:var(--text-muted)">TURN SCORE</span>
           <span class="zscore" style="color:var(--red2)" id="e-rscore">0</span>
@@ -166,9 +157,10 @@
 
     <!-- Controls -->
     <div style="display:flex;gap:12px;justify-content:center;align-items:center;padding:12px 16px">
-      <button class="btn btn-p"    id="btn-roll"  onclick="window._game?.roll()"    disabled>⚀ Roll</button>
-      <button class="btn btn-spell" id="btn-spell" onclick="showSpellPanel()"       disabled>✕ Spell</button>
-      <button class="btn btn-end"   id="btn-end"  onclick="window._game?.endTurn()" disabled>▶ End Turn</button>
+      <button class="btn"           id="btn-edit-dice" onclick="openEditDice()">⚀ Deck</button>
+      <button class="btn btn-p"    id="btn-roll"      onclick="window._game?.roll()"    disabled>⚀ Roll</button>
+      <button class="btn btn-spell" id="btn-spell"    onclick="showSpellPanel()"       disabled>✕ Spell</button>
+      <button class="btn btn-end"   id="btn-end"      onclick="window._game?.endTurn()" disabled>▶ End Turn</button>
     </div>
     <div style="text-align:center;font-family:Cinzel,serif;font-size:9px;
       letter-spacing:2px;color:var(--text-muted);padding-bottom:6px" id="hint-text">
@@ -183,44 +175,6 @@
     </div>
   </main>
 
-  <!-- ── ENEMY VAULT (right) ── -->
-  <aside class="vault-panel right" id="enemy-vault-panel">
-    <div class="vault-ph" style="gap:8px">
-      <!-- Avatar placeholder -->
-      <div id="e-avatar" style="
-        width:38px;height:38px;flex-shrink:0;
-        border:1px solid rgba(180,60,40,.5);border-radius:6px;
-        display:flex;align-items:center;justify-content:center;
-        background:rgba(180,60,40,.07);font-size:20px;
-        color:rgba(180,60,40,.6);
-      ">💀</div>
-      <!-- Name + title + streak -->
-      <div style="flex:1;min-width:0">
-        <div class="vault-name" id="e-name-lbl" style="color:var(--red2)">Enemy</div>
-        <div style="font-family:Cinzel,serif;font-size:9px;color:var(--text-muted);margin-top:1px;
-          display:flex;align-items:center;gap:5px">
-          <span id="e-title-lbl"></span>
-          <span id="e-streak-badge"></span>
-        </div>
-      </div>
-      <div class="vault-gold" id="e-gold-vault" style="color:var(--red2)">50 🪙</div>
-    </div>
-    <div class="vault-body">
-      <div style="font-family:Cinzel,serif;font-size:10px;color:var(--text-muted);margin-bottom:4px">
-        <span id="e-deck-ct">0/6</span> in deck
-      </div>
-      <div id="e-dcoll"></div>
-
-      <div class="vault-list-head" style="color:var(--red2);opacity:.7">🔮 RUNES</div>
-      <div id="e-rune-bar"></div>
-
-      <div class="vault-list-head" style="color:var(--red2);opacity:.7">✦ ENCHANTMENTS</div>
-      <div id="e-ench-list"></div>
-
-      <div class="vault-list-head" style="color:var(--red2);opacity:.7">⚔ SPELLS</div>
-      <div id="e-spell-list"></div>
-    </div>
-  </aside>
 
 </div>
 
@@ -336,6 +290,63 @@
   </div>
 </div>
 
+<!-- ── EDIT DICE OVERLAY ─────────────────────────────────────────── -->
+<div id="edit-dice-ov" class="ov" onclick="if(event.target===this)closeEditDice()">
+  <div class="ov-box" style="max-width:440px">
+    <!-- Player header -->
+    <div style="display:flex;justify-content:space-between;align-items:center;
+      margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid var(--border2)">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div id="p-avatar" style="
+          width:38px;height:38px;flex-shrink:0;
+          border:1px solid var(--gold-dim);border-radius:6px;
+          display:flex;align-items:center;justify-content:center;
+          background:rgba(212,149,42,.07);font-size:20px;
+          color:var(--gold-dim);
+        ">👤</div>
+        <div>
+          <div id="p-name-lbl" title="Click to rename"
+            style="font-family:Cinzel,serif;font-size:13px;letter-spacing:2px;
+            cursor:pointer;color:var(--gold)">Player</div>
+          <div style="font-family:Cinzel,serif;font-size:9px;color:var(--text-muted);
+            margin-top:2px;display:flex;align-items:center;gap:5px">
+            <span id="p-title-lbl">The Wanderer</span>
+            <span id="p-streak-badge"></span>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div id="p-gold-vault" style="font-family:Cinzel,serif;font-size:13px;
+          color:var(--gold2)">50 🪙</div>
+        <button onclick="closeEditDice()" style="
+          background:none;border:none;color:var(--text-muted);cursor:pointer;
+          font-size:18px;padding:0;line-height:1;
+        ">✕</button>
+      </div>
+    </div>
+
+    <!-- Deck section -->
+    <div class="vault-list-head" style="margin-top:0">⚀ DECK</div>
+    <div style="font-family:Cinzel,serif;font-size:10px;
+      color:var(--text-muted);margin-bottom:6px">
+      <span id="deck-ct">0/6</span> in deck · click to toggle
+    </div>
+    <div id="dcoll"></div>
+
+    <!-- Rune slots section -->
+    <div class="vault-list-head">🔮 RUNE SLOTS</div>
+    <div id="rune-list-bar"></div>
+
+    <!-- Enchantments -->
+    <div class="vault-list-head">✦ ENCHANTMENTS</div>
+    <div id="ench-list-bar"></div>
+
+    <!-- Spells -->
+    <div class="vault-list-head">⚔ SPELLS</div>
+    <div id="spell-list-bar"></div>
+  </div>
+</div>
+
 <!-- ── INSTANT WINDOW ────────────────────────────────────────────── -->
 <div class="instant-window" id="instant-window">
   <div style="font-family:Cinzel,serif;font-size:10px;letter-spacing:2px;color:var(--epic);margin-bottom:8px">
@@ -350,6 +361,18 @@
 
 <!-- ── CHRONICLE TOGGLE LOGIC ────────────────────────────────────── -->
 <script>
+function openEditDice() {
+  document.getElementById('edit-dice-ov').classList.add('active');
+}
+function closeEditDice() {
+  document.getElementById('edit-dice-ov').classList.remove('active');
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.getElementById('edit-dice-ov')?.classList.remove('active');
+  }
+});
+
 function toggleChronicle() {
   const panel = document.getElementById('chronicle-panel');
   const isOpen = panel.style.right === '0px';
