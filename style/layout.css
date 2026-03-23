@@ -7,6 +7,7 @@
 }
 
 html, body {
+  height: 100vh;
   height: 100dvh;
   overflow: hidden;
   background: var(--bg);
@@ -17,6 +18,7 @@ html, body {
 /* ── Game Wrapper — 7-row grid ── */
 .game-wrapper {
   display: grid;
+  height: 100vh;
   height: 100dvh;
   grid-template-rows:
     48px   /* header: title + round + goal   */

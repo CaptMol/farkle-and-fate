@@ -280,6 +280,7 @@
 <!-- ── CHRONICLE TOGGLE LOGIC ────────────────────────────────────── -->
 <script>
 function openEditDice() {
+  window._game?._renderAll();
   document.getElementById('edit-dice-ov').classList.add('active');
 }
 function closeEditDice() {
