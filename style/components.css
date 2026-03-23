@@ -1,15 +1,15 @@
 /* components.css — UI components */
 
 /* ── Game header ── */
-.game-title {
+.header-title {
   font-family: var(--font-pixel);
   font-size: 14px;
   color: var(--gold-bright);
   letter-spacing: 2px;
+  text-align: center;
 }
 
-.game-round,
-.game-goal {
+.game-round {
   font-family: var(--font-pixel);
   font-size: 8px;
   color: var(--text-dim);

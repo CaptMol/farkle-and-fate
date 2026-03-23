@@ -21,7 +21,7 @@ html, body {
   height: 100vh;
   height: 100dvh;
   grid-template-rows:
-    48px   /* header: title + round + goal   */
+    64px   /* header: title row + player-info row */
     44px   /* enemy header: name, score, gold */
     32px   /* enemy secured zone              */
     1fr    /* shared dice field               */
@@ -39,11 +39,21 @@ html, body {
 /* ── Game header ── */
 .game-header {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  padding: 0 12px;
+  gap: 4px;
+  padding: 6px 12px;
   border-bottom: 1px solid var(--border);
+}
+
+.header-sub {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 520px;
+  gap: 8px;
 }
 
 /* ── Player / enemy bars ── */
