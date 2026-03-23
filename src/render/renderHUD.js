@@ -7,9 +7,21 @@
  * render/renderHUD.js — Status bar, progress bars, turn indicator
  */
 
-export function renderHUD(player, enemy, phase) {
+// Transient info message (set by game.js after events, auto-clears)
+let _infoMsg = null;
+let _infoTimer = null;
+
+export function setInfoMsg(text, duration = 2500) {
+  _infoMsg = text;
+  if (_infoTimer) clearTimeout(_infoTimer);
+  _infoTimer = duration > 0
+    ? setTimeout(() => { _infoMsg = null; _infoTimer = null; }, duration)
+    : null;
+}
+
+export function renderHUD(player, enemy, phase, isPlayerTurn = false) {
   renderProgressBars(player, enemy);
-  renderTurnIndicator(phase, player, enemy);
+  renderTurnIndicator(phase, player, enemy, isPlayerTurn);
   renderRoundInfo(player);
 }
 
@@ -65,15 +77,34 @@ function addShopTicks(outerId, target, side) {
   }
 }
 
-function renderTurnIndicator(phase, player, enemy) {
+function renderTurnIndicator(phase, player, enemy, isPlayerTurn) {
   const h = document.getElementById('turn-h');
   if (!h) return;
 
-  const isPlayerTurn = ['ROLL','PICK','INSTANT_W1','INSTANT_W2','INSTANT_FARKLE','END_TURN'].includes(phase);
   const dot = `<span class="adot"></span>`;
 
-  if (phase === 'SHOP') {
+  // Transient event message (set via setInfoMsg after key actions)
+  if (_infoMsg) {
+    h.innerHTML = `${dot}${_infoMsg}`;
+    return;
+  }
+
+  // Contextual phase-based message
+  if (phase === 'ROLL' && isPlayerTurn) {
+    h.innerHTML = `${dot}Your turn — roll the dice`;
+  } else if (phase === 'ROLL') {
+    h.innerHTML = `${dot}${enemy.name} rolls…`;
+  } else if (phase === 'PICK' && isPlayerTurn) {
+    const hasCastable = player.spells?.some(s => s.timing === 'sorcery');
+    h.innerHTML = hasCastable
+      ? `${dot}Choose dice — or cast a spell`
+      : `${dot}Choose dice — or roll again`;
+  } else if (phase === 'PICK') {
+    h.innerHTML = `${dot}${enemy.name} thinks…`;
+  } else if (phase === 'SHOP') {
     h.innerHTML = `${dot}Shop`;
+  } else if (phase === 'BETWEEN_TURNS' || phase === 'FARKLE') {
+    h.innerHTML = `${dot}…`;
   } else if (isPlayerTurn) {
     h.innerHTML = `${dot}Your Turn`;
   } else {

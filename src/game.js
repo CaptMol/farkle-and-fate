@@ -12,7 +12,7 @@ import { greedyTurn } from './ai.js';
 import { getScorableUids } from './scoring.js';
 import { renderZone } from './render/renderZone.js';
 import { renderVault, invalidateVaultOrder, renderSpellCardBar } from './render/renderVault.js';
-import { renderHUD, animateScoreCount } from './render/renderHUD.js';
+import { renderHUD, animateScoreCount, setInfoMsg } from './render/renderHUD.js';
 import { ENEMIES, GOLD_CONFIG, ENEMY_TIERS } from './constants.js';
 import { SFX } from './audio.js';
 import { spawnParticles, spawnCoinParticles, showFloat } from './particles.js';
@@ -190,6 +190,7 @@ class Game {
     } else {
       SFX.farkle();
       log('bad', `${active.name}: FARKLE!`);
+      if (active.isHuman) setInfoMsg('Farkle — turn score lost!');
       this.fsm._advance(PHASES.FARKLE);
     }
   }
@@ -396,6 +397,7 @@ class Game {
     const { won } = active.bankScore(score);
 
     log('hi', `✓ ${score.toLocaleString()} pts banked! (+${earned} 🪙)`);
+    if (active.isHuman) setInfoMsg(`+${score.toLocaleString()} pts — +${earned} 🪙`);
     SFX.bank?.(score);
 
     // Anchor score float to score display element
@@ -503,6 +505,8 @@ class Game {
       const visible = bought.filter(i => i.type !== 'spell');
       const hidden  = bought.filter(i => i.type === 'spell').length;
       window.showEnemyShopToast?.(enemy.name, visible, hidden);
+      const names = visible.map(i => i.name).join(', ');
+      setInfoMsg(names ? `${enemy.name} bought: ${names}` : `${enemy.name} visited the shop`);
     }
     this.fsm.afterShop();
   }
@@ -678,7 +682,7 @@ class Game {
       nameEl: 'e-name-lbl', titleEl: 'e-title-lbl',
     }, { isHuman: false });
 
-    renderHUD(this.player, this.enemy, phase);
+    renderHUD(this.player, this.enemy, phase, this.fsm?.isPlayerTurn);
 
     // MTG-style spell card bar — shown during player's turn and instant windows
     const INSTANT_PHASES = ['INSTANT_W1','INSTANT_W2','INSTANT_FARKLE','INSTANT_VICTORY'];
