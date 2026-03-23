@@ -1,243 +1,51 @@
 /* vars.css — Design tokens */
 
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=IM+Fell+English:ital@0;1&display=swap');
+
 :root {
-  /* ── Core Colors ── */
-  --bg:        #09080a;
-  --bg2:       #0f0d0e;
-  --bg3:       #16120f;
-  --panel:     #1c1610;
-  --panel2:    #251c14;
-  --field:     #120f0c;
+  /* Fonts */
+  --font-pixel: 'Press Start 2P', monospace;
+  --font-body:  'IM Fell English', serif;
 
-  /* ── Borders ── */
-  --border:    #3d2e1c;
-  --border2:   #6b4e2a;
+  /* Background */
+  --bg:         #0d0a08;
+  --wood-dark:  #2e1c0a;
+  --wood-mid:   #4a2e12;
+  --stone-dark: #1c1c1c;
+  --stone-mid:  #303030;
 
-  /* ── Gold ── */
-  --gold:      #d4952a;
-  --gold2:     #f0b84a;
-  --gold-dim:  #7a5518;
+  /* Gold */
+  --gold:       #d4982e;
+  --gold-bright:#f5c050;
 
-  /* ── Red ── */
-  --red:       #9a2e1e;
-  --red2:      #cc3a28;
+  /* Text */
+  --text:       #f0e4ca;
+  --text-dim:   #a89060;
 
-  /* ── Green ── */
-  --green:     #1f8a4a;
-  --green2:    #32b862;
+  /* Accents */
+  --green:      #38cc6e;
+  --red:        #d43e2a;
+  --purple:     #9944ee;
+  --blue:       #3388ee;
 
-  /* ── Blue ── */
+  /* Rarity — exact */
+  --common:     #9a9a8a;
+  --rare:       #3d88dd;
+  --epic:       #a844ee;
+  --legendary:  #dd9922;
+  --godlike:    #ff9944;
 
-  /* ── Text ── */
-  --text:      #ede0c4;
-  --text-dim:  #a08860;
-  --text-muted:#806040;
-
-  /* ── Rarity ── */
-  --common:    #9a9a8a;
-  --rare:      #3d88dd;
-  --epic:      #a844ee;
-  --legendary: #dd9922;
-  --godlike:   #ff9944;
-
-  /* ── Glows ── */
-
-  /* ── Wood/Stone Textures ── */
-  --wood-light:rgba(90,60,30,.12);
-  --wood-dark: rgba(20,10,5,.18);
-}
-
-/* ── Skin: Tavern (default) ── */
-body.skin-tavern {}
-
-/* ── Skin: Arcane ── */
-body.skin-arcane {
-  --bg:        #050812;
-  --bg2:       #080c1a;
-  --bg3:       #0d1225;
-  --panel:     #10162e;
-  --field:     #080c1a;
-  --border:    #1e2d5a;
-  --border2:   #2d4680;
-  --gold:      #6688cc;
-  --gold2:     #88aaee;
-  --text:      #c8d8f0;
-  --text-muted:#304060;
-}
-
-/* ── Skin: Dungeon ── */
-body.skin-dungeon {
-  --bg:        #050a05;
-  --bg2:       #080e08;
-  --bg3:       #0d150d;
-  --panel:     #101a10;
-  --field:     #08100a;
-  --border:    #1a3020;
-  --border2:   #2a5030;
-  --gold:      #44aa44;
-  --gold2:     #66cc66;
-  --text:      #c0e0c0;
-  --text-muted:#305030;
-}
-
-/* layout.css — Grid, panels, structural layout */
-
-*     { margin:0; padding:0; box-sizing:border-box; }
-html  { height:100%; }
-body  {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'IM Fell English', serif;
-  font-size: 13px;
-  min-height: 100vh;
-  background-image:
-    radial-gradient(ellipse at 50% 0%,  rgba(180,100,20,.08) 0%, transparent 60%),
-    radial-gradient(ellipse at 20% 50%, rgba(212,149,42,.04) 0%, transparent 45%),
-    repeating-linear-gradient(92deg,  transparent, transparent 40px, var(--wood-light) 40px, var(--wood-light) 41px),
-    repeating-linear-gradient(178deg, transparent, transparent 80px, var(--wood-dark)  80px, var(--wood-dark)  82px);
-}
-
-/* ── Header ── */
-.hdr {
-  text-align: center;
-  padding: 16px 60px 12px;
-  background: linear-gradient(180deg, rgba(28,18,8,.95) 0%, rgba(15,12,8,.98) 100%);
-  border-bottom: 3px solid var(--border2);
-  box-shadow: 0 3px 0 rgba(0,0,0,.5), inset 0 -1px 0 rgba(255,200,100,.06);
-  position: relative;
-  background-image:
-    repeating-linear-gradient(90deg, transparent 0px, transparent 5px,
-      rgba(0,0,0,.1) 5px, rgba(0,0,0,.1) 6px),
-    linear-gradient(180deg, #2a1a08 0%, #1c1208 100%);
-}
-.hdr-controls {
-  position: absolute;
-  top: 8px; right: 12px;
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-.hdr-line {
-  position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent 5%, var(--gold-dim) 25%, var(--gold) 50%, var(--gold-dim) 75%, transparent 95%);
-}
-.game-title {
-  font-family: 'Cinzel Decorative', serif;
-  font-size: 26px;
-  color: var(--gold2);
-  letter-spacing: 8px;
-  text-shadow: 3px 3px 0 rgba(0,0,0,.9), 0 0 20px rgba(212,149,42,.5);
-  text-transform: uppercase;
-}
-.game-sub {
-  font-size: 10px;
-  color: var(--text-muted);
-  letter-spacing: 4px;
-  margin-top: 3px;
-  font-family: 'Cinzel', serif;
-  text-transform: uppercase;
-  opacity: .85;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
-
-/* ── Status Bar ── */
-.sbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 20px;
-  border-bottom: 3px solid var(--border2);
-  gap: 12px;
-  background-image:
-    repeating-linear-gradient(90deg, transparent 0px, transparent 4px,
-      rgba(0,0,0,.06) 4px, rgba(0,0,0,.06) 5px),
-    linear-gradient(180deg, #231508 0%, #1a1006 100%);
-}
-
-/* ── Main Layout ── */
-.layout {
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: 1fr;
-  height: calc(100vh - 120px);
-  gap: 0;
-}
-.vault-panel {
-  display: none; /* hidden — replaced by Edit Dice overlay (#27) */
-  flex-direction: column;
-  overflow: hidden;
-  border-right: 2px solid var(--border);
-  background:
-    repeating-linear-gradient(90deg, transparent 0px, transparent 3px, rgba(0,0,0,.08) 3px, rgba(0,0,0,.08) 4px),
-    repeating-linear-gradient(180deg, transparent 0px, transparent 8px, rgba(255,255,255,.02) 8px, rgba(255,255,255,.02) 9px),
-    linear-gradient(160deg, #2a1a08 0%, #1c1208 40%, #251608 100%);
-  box-shadow: inset 0 0 0 1px rgba(255,200,100,.08), inset 2px 2px 0 rgba(255,200,100,.06), 4px 4px 0 rgba(0,0,0,.7);
-}
-.vault-panel.right {
-  border-right: none;
-  border-left: 2px solid var(--border);
-}
-.vault-ph {
-  padding: 8px 10px 6px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 2px solid var(--border2);
-  background: linear-gradient(180deg, #2a1e0a 0%, #1c1408 100%);
-  flex-shrink: 0;
-}
-.vault-name {
-  font-family: 'Cinzel', serif;
-  font-size: 10px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--gold);
-}
-.vault-gold {
-  font-family: 'Cinzel', serif;
-  font-size: 11px;
-  color: var(--gold2);
-}
-.vault-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 8px 10px;
-  scrollbar-width: thin;
-  scrollbar-color: var(--border2) transparent;
-}
-.vault-list-head {
-  font-family: 'Cinzel', serif;
-  font-size: 11px;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  padding: 5px 0 4px;
-  margin-top: 10px;
-  margin-bottom: 5px;
-  border-bottom: 1px solid var(--border2);
-}
-
-/* ── Central Field ── */
-.central {
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  overflow-x: hidden;
-  background:
-    repeating-linear-gradient(45deg,  transparent 0px, transparent 6px, rgba(0,0,0,.06) 6px, rgba(0,0,0,.06) 7px),
-    repeating-linear-gradient(-45deg, transparent 0px, transparent 6px, rgba(255,255,255,.02) 6px, rgba(255,255,255,.02) 7px),
-    linear-gradient(180deg, #0e0c0a 0%, #0a0908 100%);
-}
-
-
-/* ── Mobile ── */
-@media (max-width: 600px) {
-  .hdr         { padding: 10px 16px 8px; }
-  .game-title  { font-size: 18px; letter-spacing: 4px; }
-  .hdr-controls{ top: 6px; right: 8px; }
-  .sbar        { padding: 5px 10px; }
-  .layout      { height: calc(100vh - 96px); }
+  /* Compatibility aliases — for inline HTML/JS styles */
+  --bg2:        var(--stone-dark);
+  --bg3:        var(--stone-dark);
+  --panel:      var(--wood-dark);
+  --panel2:     var(--wood-dark);
+  --field:      var(--bg);
+  --border:     rgba(212, 152, 46, 0.35);
+  --border2:    var(--gold);
+  --gold2:      var(--gold-bright);
+  --gold-dim:   #8a6020;
+  --red2:       var(--red);
+  --green2:     var(--green);
+  --text-muted: var(--text-dim);
 }

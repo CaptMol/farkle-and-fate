@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,174 +7,105 @@
 <link rel="stylesheet" href="style/vars.css">
 <link rel="stylesheet" href="style/layout.css">
 <link rel="stylesheet" href="style/components.css">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
 </head>
-<body class="skin-tavern">
+<body>
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
-</head>
-<body class="skin-tavern">
+<!-- ── GAME WRAPPER ──────────────────────────────────────────────── -->
+<div class="game-wrapper">
 
-<!-- ── HEADER ──────────────────────────────────────────────────── -->
-<header class="hdr">
-  <div class="game-title">Farkle &amp; Fate</div>
-  <div class="game-sub">
-    <span style="color:var(--gold-dim);font-size:13px;opacity:.6">⚔</span>
-    <span>The Dice Shall Decide</span>
-    <span style="color:var(--gold-dim);font-size:13px;opacity:.6">⚔</span>
+  <!-- Left panel: player vault (desktop only) -->
+  <aside class="side-panel left-panel">
+    <div class="panel-head">YOUR VAULT</div>
+    <div class="panel-body" style="display:flex;align-items:center;justify-content:center;
+      font-family:var(--font-pixel);font-size:8px;color:var(--text-dim);text-align:center;padding:16px">
+      Press ⚀ to manage dice
+    </div>
+  </aside>
+
+  <!-- Row 1: Game header (48px) -->
+  <header class="game-header">
+    <div class="game-title">Farkle &amp; Fate</div>
+    <span id="run-round" class="game-round">Round 1</span>
+    <span id="tgt-line" class="game-goal">GOAL: 10,000</span>
+  </header>
+
+  <!-- Row 2: Enemy header (44px) -->
+  <div class="player-bar enemy-bar" id="ez">
+    <span id="e-name-lbl" class="bar-name">Enemy</span>
+    <span id="s-enemy-score" class="bar-score">0</span>
+    <span id="e-gold-vault" class="bar-gold">50 🪙</span>
+    <span id="e-title-lbl" style="display:none"></span>
+    <span id="e-streak-badge" style="display:none"></span>
   </div>
-  <div class="hdr-line"></div>
-  <div class="hdr-controls">
-    <select id="skin-select" onchange="document.body.className=this.value;localStorage.setItem('ff-skin',this.value)"
-      style="background:var(--bg3);border:1px solid var(--border2);border-radius:4px;
-      color:var(--text-muted);font-family:Cinzel,serif;font-size:9px;letter-spacing:1px;
-      padding:3px 6px;cursor:pointer;outline:none;appearance:none;">
-      <option value="skin-tavern">⬛ Tavern</option>
-      <option value="skin-arcane">🔵 Arcane</option>
-      <option value="skin-dungeon">🟢 Dungeon</option>
-    </select>
+
+  <!-- Row 3: Enemy secured zone (32px) -->
+  <div class="secured-zone enemy-secured" id="e-seczone">
+    <div class="es sec-empty" style="color:var(--text-dim);font-size:9px;font-style:italic">—</div>
   </div>
-</header>
 
-<!-- ── STATUS BAR ───────────────────────────────────────────────── -->
-<div class="sbar">
-  <span style="font-family:Cinzel,serif;font-size:10px;letter-spacing:1px;color:var(--text-muted)" id="run-round">Round 1</span>
-  <div style="flex:1;max-width:520px;padding:0 20px">
-    <div class="prog-label-row">
-      <span style="color:var(--green2)">▶ PLAYER</span>
-      <span id="next-shop-label" style="color:var(--gold-dim);font-size:9px;letter-spacing:0"></span>
-      <span style="color:var(--red2)">ENEMY ◀</span>
+  <!-- Row 4: Shared dice field (1fr) -->
+  <div class="dice-field">
+    <div class="think" id="think">
+      <span id="think-name">Enemy ponders</span>
+      <div><span>•</span><span>•</span><span>•</span></div>
     </div>
-    <div class="prog-wrap">
-      <div class="prog-bar-outer" id="prog-player-outer">
-        <div class="prog-fill-player" id="prog-player" style="width:0%"></div>
-      </div>
-      <div class="prog-divider"></div>
-      <div class="prog-bar-outer" id="prog-enemy-outer">
-        <div class="prog-fill-enemy" id="prog-enemy" style="width:0%"></div>
-      </div>
+    <div id="e-combo-banner"></div>
+    <div class="drow" id="e-drow">
+      <div class="es" style="color:var(--text-dim);font-size:11px;font-style:italic;text-align:center;padding:20px 0">Waiting for your turn…</div>
     </div>
-    <div class="prog-score-row">
-      <span class="prog-score-p">
-        <span id="s-player-score">0</span>
-        <span style="font-size:9px;color:var(--text-muted)" id="s-player-target">/ 10,000</span>
-      </span>
-      <span class="prog-score-e">
-        <span style="font-size:9px;color:var(--text-muted)" id="s-enemy-target">10,000 /</span>
-        <span id="s-enemy-score">0</span>
-      </span>
-    </div>
-  </div>
-  <span style="font-family:Cinzel,serif;font-size:10px;letter-spacing:1px;color:var(--text-muted)" id="sbar-right"></span>
-</div>
-
-<!-- ── MAIN LAYOUT ───────────────────────────────────────────────── -->
-<div class="layout">
-
-  <!-- ── CENTRAL FIELD ── -->
-  <main class="central">
-
-    <!-- Enemy zone -->
-    <div style="padding:0 0 4px">
-
-      <div class="zone ez inactive" id="ez">
-        <div class="zone-lbl el" id="e-namelbl">Enemy</div>
-        <!-- Enemy info (moved from vault panel) -->
-        <div style="display:flex;justify-content:space-between;align-items:center;
-          margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--border)">
-          <div style="display:flex;align-items:center;gap:6px">
-            <div id="e-avatar" style="
-              width:24px;height:24px;flex-shrink:0;
-              border:1px solid rgba(180,60,40,.5);border-radius:4px;
-              display:flex;align-items:center;justify-content:center;
-              background:rgba(180,60,40,.07);font-size:13px;
-              color:rgba(180,60,40,.6);
-            ">💀</div>
-            <div>
-              <div id="e-name-lbl" style="font-family:Cinzel,serif;font-size:11px;
-                letter-spacing:1px;color:var(--red2)">Enemy</div>
-              <div style="font-family:Cinzel,serif;font-size:8px;color:var(--text-muted);
-                display:flex;align-items:center;gap:4px;margin-top:1px">
-                <span id="e-title-lbl"></span>
-                <span id="e-streak-badge"></span>
-              </div>
-            </div>
-          </div>
-          <div id="e-gold-vault" style="font-family:Cinzel,serif;font-size:11px;
-            color:var(--red2)">50 🪙</div>
-        </div>
-        <!-- Hidden elements kept for renderVault to update (enemy deck/items not shown) -->
-        <span id="e-deck-ct" style="display:none">0/6</span>
-        <div id="e-dcoll" style="display:none"></div>
-        <div id="e-rune-bar" style="display:none"></div>
-        <div id="e-ench-list" style="display:none"></div>
-        <div id="e-spell-list" style="display:none"></div>
-        <div class="zscore-row">
-          <span style="font-family:Cinzel,serif;font-size:9px;letter-spacing:2px;color:var(--text-muted)">TURN SCORE</span>
-          <span class="zscore" style="color:var(--red2)" id="e-rscore">0</span>
-        </div>
-        <div id="e-combo-banner"></div>
-        <div class="think" id="think">
-          <span id="think-name">Enemy ponders</span>
-          <div><span>•</span><span>•</span><span>•</span></div>
-        </div>
-        <div class="drow" id="e-drow"><div class="es" style="color:var(--text-muted);font-size:12px;font-style:italic;text-align:center;padding:20px 0">Waiting for your turn…</div></div>
-        <div class="seczone" id="e-seczone" style="border-color:rgba(180,60,40,.25);background:rgba(180,60,40,.02)">
-          <div class="seczone-lbl" style="color:var(--red2);background:var(--field)">Secured</div>
-          <div class="es sec-empty" style="color:var(--text-muted);font-size:11px;font-style:italic">—</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Goal line -->
-    <div style="text-align:center;font-family:Cinzel,serif;font-size:10px;
-      letter-spacing:4px;color:var(--text-muted);padding:3px 0;
-      border-top:1px solid var(--border);border-bottom:1px solid var(--border)" id="tgt-line">
-      GOAL: 10,000 POINTS
-    </div>
-
-    <!-- Turn indicator -->
     <div class="turn-h" id="turn-h"><span class="adot"></span>Your Turn</div>
+    <div id="p-combo-banner"></div>
+    <div class="drow" id="p-drow"></div>
+  </div>
 
-    <!-- Player zone -->
-    <div style="padding:4px 0 0">
-      <div class="zone active" id="pz">
-        <div class="zone-lbl pl">Player</div>
-        <div class="zscore-row">
-          <span style="font-family:Cinzel,serif;font-size:9px;letter-spacing:2px;color:var(--text-muted)">TURN SCORE</span>
-          <span class="zscore" style="color:var(--green2)" id="p-rscore">0</span>
-        </div>
-        <div id="p-combo-banner"></div>
-        <div class="drow" id="p-drow"></div>
-        <div class="seczone" id="p-seczone">
-          <div class="seczone-lbl">Secured</div>
-          <div class="es sec-empty" id="p-sec-empty" style="color:var(--text-muted);font-size:12px;font-style:italic">Click scoring dice · roll again · or End Turn</div>
-        </div>
-      </div>
-    </div>
+  <!-- Row 5: Player secured zone (32px) -->
+  <div class="secured-zone player-secured" id="p-seczone">
+    <div class="es sec-empty" id="p-sec-empty" style="color:var(--text-dim);font-size:9px;font-style:italic">Click scoring dice · roll again · or End Turn</div>
+  </div>
 
-    <!-- Controls -->
-    <div style="display:flex;gap:12px;justify-content:center;align-items:center;padding:12px 16px">
-      <button class="btn"           id="btn-edit-dice" onclick="openEditDice()">⚀ Deck</button>
-      <button class="btn btn-p"    id="btn-roll"      onclick="window._game?.roll()"    disabled>⚀ Roll</button>
-      <button class="btn btn-spell" id="btn-spell"    onclick="showSpellPanel()"       disabled>✕ Spell</button>
-      <button class="btn btn-end"   id="btn-end"      onclick="window._game?.endTurn()" disabled>▶ End Turn</button>
-    </div>
-    <div style="text-align:center;font-family:Cinzel,serif;font-size:9px;
-      letter-spacing:2px;color:var(--text-muted);padding-bottom:6px" id="hint-text">
-      Click scoring dice · roll again · or End Turn
-    </div>
+  <!-- Row 6: Player header (44px) -->
+  <div class="player-bar" id="pz">
+    <span id="p-name-lbl" class="bar-name" title="Click to rename">Player</span>
+    <span id="s-player-score" class="bar-score">0</span>
+    <span id="p-gold-vault" class="bar-gold">50 🪙</span>
+    <span id="p-title-lbl" style="display:none">The Wanderer</span>
+    <span id="p-streak-badge" style="display:none"></span>
+  </div>
 
-    <!-- Combinations display -->
-    <div style="border-top:1px solid var(--border);padding:8px 16px">
-      <div style="font-family:Cinzel,serif;font-size:9px;letter-spacing:3px;
-        color:var(--text-muted);margin-bottom:6px">● COMBINATIONS</div>
-      <div id="combo-display" style="font-size:11px;color:var(--text-muted);font-style:italic">None yet</div>
-    </div>
-  </main>
+  <!-- Row 7: Buttons (64px) -->
+  <div class="btn-row">
+    <button class="btn btn-edit" id="btn-edit-dice" onclick="openEditDice()">⚀</button>
+    <button class="btn btn-p"    id="btn-roll"      onclick="window._game?.roll()"    disabled>⚀ Roll</button>
+    <button class="btn btn-spell" id="btn-spell"    onclick="showSpellPanel()"       disabled>✕ Spell</button>
+    <button class="btn btn-end"   id="btn-end"      onclick="window._game?.endTurn()" disabled>▶ End Turn</button>
+  </div>
 
+  <!-- Right panel: enemy info + combinations (desktop only) -->
+  <aside class="side-panel right-panel">
+    <div class="panel-head">ENEMY</div>
+    <div class="panel-body">
+      <div id="e-avatar" style="font-size:32px;text-align:center;padding:8px 0">💀</div>
+      <div class="vault-list-head">● COMBINATIONS</div>
+      <div id="combo-display" style="font-family:var(--font-pixel);font-size:8px;color:var(--text-dim);font-style:italic;padding:4px 0">None yet</div>
+      <span id="e-deck-ct" style="display:none">0/6</span>
+      <div id="e-dcoll" style="display:none"></div>
+      <div id="e-rune-bar" style="display:none"></div>
+      <div id="e-ench-list" style="display:none"></div>
+      <div id="e-spell-list" style="display:none"></div>
+    </div>
+  </aside>
+
+  <!-- Hidden HUD elements — updated by renderHUD/renderZone -->
+  <div style="display:none" aria-hidden="true">
+    <div id="prog-player-outer"><div id="prog-player" style="width:0%"></div></div>
+    <div id="prog-enemy-outer"><div id="prog-enemy" style="width:0%"></div></div>
+    <span id="s-player-target">/ 10,000</span>
+    <span id="s-enemy-target">10,000 /</span>
+    <span id="next-shop-label"></span>
+    <span id="hint-text"></span>
+    <span id="p-rscore">0</span>
+    <span id="e-rscore">0</span>
+  </div>
 
 </div>
 
@@ -293,42 +224,29 @@
 <!-- ── EDIT DICE OVERLAY ─────────────────────────────────────────── -->
 <div id="edit-dice-ov" class="ov" onclick="if(event.target===this)closeEditDice()">
   <div class="ov-box" style="max-width:440px">
-    <!-- Player header -->
+    <!-- Vault header -->
     <div style="display:flex;justify-content:space-between;align-items:center;
-      margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid var(--border2)">
+      margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid var(--gold)">
       <div style="display:flex;align-items:center;gap:10px">
         <div id="p-avatar" style="
           width:38px;height:38px;flex-shrink:0;
-          border:1px solid var(--gold-dim);border-radius:6px;
+          border:1px solid var(--gold);border-radius:6px;
           display:flex;align-items:center;justify-content:center;
           background:rgba(212,149,42,.07);font-size:20px;
-          color:var(--gold-dim);
+          color:var(--text-dim);
         ">👤</div>
-        <div>
-          <div id="p-name-lbl" title="Click to rename"
-            style="font-family:Cinzel,serif;font-size:13px;letter-spacing:2px;
-            cursor:pointer;color:var(--gold)">Player</div>
-          <div style="font-family:Cinzel,serif;font-size:9px;color:var(--text-muted);
-            margin-top:2px;display:flex;align-items:center;gap:5px">
-            <span id="p-title-lbl">The Wanderer</span>
-            <span id="p-streak-badge"></span>
-          </div>
-        </div>
+        <div style="font-family:var(--font-pixel);font-size:10px;color:var(--gold);letter-spacing:2px">YOUR VAULT</div>
       </div>
-      <div style="display:flex;align-items:center;gap:12px">
-        <div id="p-gold-vault" style="font-family:Cinzel,serif;font-size:13px;
-          color:var(--gold2)">50 🪙</div>
-        <button onclick="closeEditDice()" style="
-          background:none;border:none;color:var(--text-muted);cursor:pointer;
-          font-size:18px;padding:0;line-height:1;
-        ">✕</button>
-      </div>
+      <button onclick="closeEditDice()" style="
+        background:none;border:none;color:var(--text-dim);cursor:pointer;
+        font-size:18px;padding:0;line-height:1;
+      ">✕</button>
     </div>
 
     <!-- Deck section -->
     <div class="vault-list-head" style="margin-top:0">⚀ DECK</div>
-    <div style="font-family:Cinzel,serif;font-size:10px;
-      color:var(--text-muted);margin-bottom:6px">
+    <div style="font-family:var(--font-pixel);font-size:8px;
+      color:var(--text-dim);margin-bottom:6px">
       <span id="deck-ct">0/6</span> in deck · click to toggle
     </div>
     <div id="dcoll"></div>
@@ -397,12 +315,7 @@ import { mkDie } from './src/dice.js';
 // Init game
 initGame();
 
-// Restore skin
-const saved = localStorage.getItem('ff-skin');
-if (saved) {
-  document.body.className = saved;
-  document.getElementById('skin-select').value = saved;
-}
+
 
 // ── Shop UI ──────────────────────────────────────────────────────
 window._shopCallback = null;
