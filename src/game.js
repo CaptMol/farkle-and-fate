@@ -139,6 +139,12 @@ class Game {
       }
     }
 
+    // Hot Dice (Feuerhand): player picked all active dice — trigger HOT_DICE phase
+    if (turn.hasHotDice) {
+      this.fsm._advance(PHASES.HOT_DICE);
+      return;
+    }
+
     SFX.roll();
 
     // Invalidate vault sort cache so list re-sorts after roll (not during vault interaction)
@@ -343,6 +349,15 @@ class Game {
           newTurn = newTurn.withPickDie(uid);
         }
       });
+
+      // Hot Dice (Feuerhand): enemy picked all active dice — trigger HOT_DICE phase
+      if (newTurn.hasHotDice) {
+        this._setTurn(active, newTurn);
+        this._renderAll();
+        setTimeout(() => this.fsm._advance(PHASES.HOT_DICE), 400);
+        return;
+      }
+
       newTurn = newTurn.withArchive(active.enchants.perPick);
       this._setTurn(active, newTurn);
       this._renderAll();
