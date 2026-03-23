@@ -107,6 +107,10 @@ function renderDiceField(turnState, domIds, options) {
     const el = buildDieEl(ds, cls);
     el.dataset.slot = slot;
 
+    if (ds.rolling) {
+      el.style.setProperty('--fall-delay', `${slot * 60}ms`);
+    }
+
     if (isHuman && isActive && phase === 'PICK' && (scorable || inCombo)) {
       el.onclick = () => window._game?.pickDie(ds.uid);
     }

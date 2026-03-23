@@ -89,8 +89,8 @@
 .die.combo-hit:hover { transform: translateY(-3px) scale(1.06); }
 .die.combo-hover { box-shadow: 0 0 28px rgba(168,68,238,.95), 0 0 48px rgba(168,68,238,.4), 2px 2px 0 rgba(0,0,0,.7) !important; transform: translateY(-2px) scale(1.05); }
 .die.rolling {
-  animation: roll-spin 0.52s ease-out;
-  opacity: .7;
+  animation: dice-fall 400ms ease-out both;
+  animation-delay: var(--fall-delay, 0ms);
 }
 
 /* Split Die */
@@ -341,7 +341,13 @@
 @keyframes float-up { 0%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(-60px)} }
 
 /* ── Animations ── */
-@keyframes roll-spin { 0%{transform:rotate(0) scale(.8);opacity:.4} 60%{transform:rotate(180deg) scale(1.05);opacity:.9} 100%{transform:rotate(0) scale(1);opacity:1} }
+@keyframes dice-fall {
+  0%   { transform: translateY(-80px) rotate(-15deg); opacity: 0; }
+  65%  { transform: translateY(6px)   rotate(2deg);   opacity: 1; }
+  80%  { transform: translateY(-3px)  rotate(-1deg);              }
+  90%  { transform: translateY(2px)   rotate(.5deg);              }
+  100% { transform: translateY(0)     rotate(0);                  }
+}
 
 /* ── Overlays / Modals ── */
 .ov {
