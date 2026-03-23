@@ -219,13 +219,10 @@
 
 /* ── Dice row ── */
 .drow {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
+  position: relative;
   width: 100%;
   max-width: 520px;
-  min-height: 56px;
+  min-height: 120px;
 }
 
 /* ── Turn indicator ── */

@@ -28,6 +28,44 @@ import { findAllCombos, getScorableUids, calcScore } from '../scoring.js';
  */
 
 
+// ── Die position store ────────────────────────────────────────────────────
+// Positions persist across renders within a roll phase so dice don't jump.
+// Cleared on each new roll so every throw looks different.
+const _diePositions = new Map();
+const FIELD_H  = 120; // height of .drow for absolute layout (px)
+const DIE_SZ   = 56;
+const MIN_DIST = 62;  // minimum center-to-center distance (px)
+
+/** Place a die randomly, avoiding already-placed positions. */
+function _placeNewDie(uid, fieldW, usedPositions) {
+  const maxX = Math.max(1, fieldW - DIE_SZ - 8);
+  const maxY = Math.max(1, FIELD_H - DIE_SZ - 8);
+  let best = null;
+  let bestMinDist = -1;
+  for (let t = 0; t < 40; t++) {
+    const x   = 8 + Math.random() * maxX;
+    const y   = 8 + Math.random() * maxY;
+    const rot = (Math.random() - 0.5) * 24;
+    const cx  = x + DIE_SZ / 2;
+    const cy  = y + DIE_SZ / 2;
+    let minDist = Infinity;
+    for (const p of usedPositions) {
+      const dx = (p.x + DIE_SZ / 2) - cx;
+      const dy = (p.y + DIE_SZ / 2) - cy;
+      minDist = Math.min(minDist, Math.sqrt(dx * dx + dy * dy));
+    }
+    if (minDist >= MIN_DIST) {
+      const pos = { x, y, rot };
+      _diePositions.set(uid, pos);
+      return pos;
+    }
+    if (minDist > bestMinDist) { bestMinDist = minDist; best = { x, y, rot }; }
+  }
+  const pos = best ?? { x: 8, y: 8, rot: 0 };
+  _diePositions.set(uid, pos);
+  return pos;
+}
+
 // ── Main Zone Render ──────────────────────────────────────────────────────
 
 export function renderZone(playerState, turnState, domIds, options = {}) {
@@ -56,26 +94,34 @@ function renderDiceField(turnState, domIds, options) {
     secEl.style.filter  = (preRoll && turnState.archived.length > 0) ? 'grayscale(.6)' : '';
   }
 
-  // Total slots: 6 standard, 7 with extra-die spell
   const hasExtraDie = playerState?._extraDiePending || false;
   const totalSlots = hasExtraDie ? 7 : 6;
   row.classList.toggle('extra-die', totalSlots === 7);
 
-  // Build slot map: slotIndex → DieState (active only — picked/archived leave gaps)
-  const slotMap = new Map();
-  turnState.active.forEach(ds => slotMap.set(ds.slotIndex ?? 0, ds));
-
-  // Nothing rolled yet
+  // Nothing rolled yet — show ghost placeholders in a centered grid
   const nothingYet = !turnState.active.length && !turnState.picked.length && !turnState.archived.length;
   if (nothingYet) {
-    // Still show empty grid — layout must not jump
-    for (let slot = 0; slot < totalSlots; slot++) {
+    const fw   = Math.max(200, row.offsetWidth);
+    const cols = Math.min(totalSlots, 3);
+    const totalW = cols * DIE_SZ + (cols - 1) * 8;
+    const startX = Math.max(0, (fw - totalW) / 2);
+    const startY = 8;
+    for (let i = 0; i < totalSlots; i++) {
+      const col = i % cols;
+      const r   = Math.floor(i / cols);
       const ghost = document.createElement('div');
       ghost.className = 'die-ghost';
+      ghost.style.cssText = `position:absolute;left:${startX + col * (DIE_SZ + 8)}px;top:${startY + r * (DIE_SZ + 8)}px;width:${DIE_SZ}px;height:${DIE_SZ}px`;
       row.appendChild(ghost);
     }
     return;
   }
+
+  const fieldW = Math.max(200, row.offsetWidth);
+  const active = turnState.active;
+
+  // New roll: clear position cache so dice land at fresh random positions
+  if (active.some(ds => ds.rolling)) _diePositions.clear();
 
   // Scoring info for PICK phase
   const scorableUids = (isActive && phase === 'PICK')
@@ -85,17 +131,13 @@ function renderDiceField(turnState, domIds, options) {
   const activeCombo = allCombos.sort((a,b) => b.score - a.score)[0];
   const comboUids = activeCombo ? new Set(activeCombo.diceUids) : new Set();
 
-  // Render all slots — dice stay at their fixed position, gaps where picked/archived
-  for (let slot = 0; slot < totalSlots; slot++) {
-    const ds = slotMap.get(slot);
+  const placed = [];
 
-    if (!ds) {
-      const ghost = document.createElement('div');
-      ghost.className = 'die-ghost';
-      ghost.dataset.slot = slot;
-      row.appendChild(ghost);
-      continue;
-    }
+  active.forEach((ds, i) => {
+    // Look up cached position or generate a new non-overlapping one
+    let pos = _diePositions.get(ds.uid);
+    if (!pos) pos = _placeNewDie(ds.uid, fieldW, placed);
+    placed.push(pos);
 
     const inCombo  = comboUids.has(ds.uid);
     const scorable = scorableUids.has(ds.uid);
@@ -105,10 +147,11 @@ function renderDiceField(turnState, domIds, options) {
       : '';
 
     const el = buildDieEl(ds, cls);
-    el.dataset.slot = slot;
+    el.dataset.uid  = ds.uid;
+    el.dataset.slot = ds.slotIndex ?? i;
 
     if (ds.rolling) {
-      el.style.setProperty('--fall-delay', `${slot * 60}ms`);
+      el.style.setProperty('--fall-delay', `${i * 60}ms`);
     }
 
     if (isHuman && isActive && phase === 'PICK' && (scorable || inCombo)) {
@@ -119,8 +162,14 @@ function renderDiceField(turnState, domIds, options) {
       el.title = '❄ Frozen';
     }
 
-    row.appendChild(el);
-  }
+    // Wrapper controls position + persistent rotation.
+    // Die element handles its own fall animation (transform on a separate element
+    // so the keyframe transforms don't clobber the rotation).
+    const wrap = document.createElement('div');
+    wrap.style.cssText = `position:absolute;left:${Math.round(pos.x)}px;top:${Math.round(pos.y)}px;transform:rotate(${pos.rot.toFixed(1)}deg)`;
+    wrap.appendChild(el);
+    row.appendChild(wrap);
+  });
 }
 // ── Secured Zone ──────────────────────────────────────────────────────────
 
